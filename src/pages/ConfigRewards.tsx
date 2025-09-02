@@ -12,7 +12,7 @@ type RewardRow = {
   points_cnt: number
   common_for_household_flg: boolean
   author_profile_id: string
-  author?: { display_name: string | null } | null
+  author?: Array<{ display_name: string | null }> | null
 }
 
 export default function ConfigRewards() {
@@ -82,7 +82,7 @@ export default function ConfigRewards() {
                     if (r.common_for_household_flg) {
                       return `+${r.points_cnt} баллов для текущего игрока`
                     }
-                    const authorName = r.author?.display_name ?? '—'
+                    const authorName = r.author?.[0]?.display_name ?? '—'
                     const other = (profiles.find(p => p.id !== r.author_profile_id)?.display_name) ?? '—'
                     return `+${r.points_cnt} баллов от ${authorName} для ${other}`
                   })()}

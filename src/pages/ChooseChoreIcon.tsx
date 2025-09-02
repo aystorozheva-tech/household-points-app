@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import BroomIcon from '../icons/BroomIcon'
@@ -8,7 +9,7 @@ import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
 
-type Option = { id: string; label: string; Icon: (p: { className?: string }) => JSX.Element }
+type Option = { id: string; label: string; Icon: React.ComponentType<{ className?: string }> }
 
 const OPTIONS: Option[] = [
   { id: 'broom', label: 'Пылесос/Подметание', Icon: BroomIcon },

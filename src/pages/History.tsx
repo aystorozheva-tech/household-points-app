@@ -12,7 +12,7 @@ type EntryRow = {
   title: string
   points: number
   created_at: string
-  profile?: { display_name: string | null; avatar_url: string | null } | null
+  profile?: Array<{ display_name: string | null; avatar_url: string | null }> | null
 }
 
 export default function History() {
@@ -47,7 +47,7 @@ export default function History() {
       <div className="space-y-3">
         {items.map(e => (
           <div key={e.id} className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-md">
-            <Avatar url={e.profile?.avatar_url || undefined} name={e.profile?.display_name || '—'} />
+            <Avatar url={e.profile?.[0]?.avatar_url || undefined} name={e.profile?.[0]?.display_name || '—'} />
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-slate-900 truncate">{e.title}</span>

@@ -119,7 +119,7 @@ export default function ChooseRooms() {
           ) : (
             <div className="space-y-3">
               {rooms.map(r => {
-                const RoomIconMap: Record<string, (p:{className?:string})=>JSX.Element> = {
+                const RoomIconMap: Record<string, React.ComponentType<{className?:string}>> = {
                   bed: BedIcon,
                   bath: BathIcon,
                   kitchen: KitchenIcon,

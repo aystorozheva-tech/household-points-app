@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type React from 'react'
 import Layout from '../components/Layout'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -69,7 +70,7 @@ export default function ConfigTasks() {
       <div className="space-y-3 mb-6">
         {chores.map(c => {
           const Ico = (c.icon_id && (IconMap as any)[c.icon_id]) || null
-          const IconComp = Ico as (p: { className?: string }) => JSX.Element | null
+          const IconComp = Ico as React.ComponentType<{ className?: string }> | null
           return (
             <button
               key={c.id}

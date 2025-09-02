@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type React from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
@@ -66,7 +67,7 @@ export default function AddChore() {
   } as const), [])
 
   function IconPreview() {
-    const Cmp = (iconId && (IconMap as any)[iconId]) as (p: { className?: string }) => JSX.Element | undefined
+    const Cmp = (iconId && (IconMap as any)[iconId]) as React.ComponentType<{ className?: string }> | undefined
     return (
       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E700FD] to-[#7900FD] shadow-lg flex items-center justify-center mb-2">
         <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">

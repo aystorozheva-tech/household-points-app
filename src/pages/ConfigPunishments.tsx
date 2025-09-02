@@ -6,7 +6,7 @@ import type { AppOutletCtx } from '../AppLayout'
 import BrokenHeartIcon from '../icons/BrokenHeartIcon'
 import ChevronRightIcon from '../icons/ChevronRightIcon'
 
-type FineRow = { id: string; name_ru: string; points_cnt: number; common_for_household_flg: boolean; author_profile_id?: string; author?: { display_name: string | null } | null }
+type FineRow = { id: string; name_ru: string; points_cnt: number; common_for_household_flg: boolean; author_profile_id?: string; author?: Array<{ display_name: string | null }> | null }
 
 export default function ConfigPunishments() {
   const navigate = useNavigate()
@@ -76,7 +76,7 @@ export default function ConfigPunishments() {
                     if (f.common_for_household_flg) {
                       return `-${f.points_cnt} баллов для другого игрока`
                     }
-                    const authorName = f.author?.display_name ?? '—'
+                    const authorName = f.author?.[0]?.display_name ?? '—'
                     const other = (profiles.find(p => p.id !== (f as any).author_profile_id)?.display_name) ?? '—'
                     return `-${f.points_cnt} баллов от ${authorName} для ${other}`
                   })()}
