@@ -4,7 +4,6 @@ import React from 'react'
 // импорт новых иконок из src/public/icons/
 import HomeIcon from '../icons/HomeIcon'
 import HistoryIcon from '../icons/HistoryIcon'
-import ResultsIcon from '../icons/ResultsIcon'
 import SettingsIcon from '../icons/SettingsIcon'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -32,10 +31,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <nav className="fixed bottom-4 left-0 right-0">
         <div className="max-w-md mx-auto px-4">
-          <div className="grid grid-cols-4 rounded-3xl border border-white/70 bg-white/95 backdrop-blur shadow-md">
+          <div className="grid grid-cols-3 rounded-3xl border border-white/70 bg-white/95 backdrop-blur shadow-md">
             {tab('/', <HomeIcon />, 'Дом')}
             {tab('/history', <HistoryIcon />, 'История')}
-            {tab('/results', <ResultsIcon />, 'Итоги')}
             {tab('/settings', <SettingsIcon />, 'Настройки')}
           </div>
         </div>

@@ -100,50 +100,36 @@ export default function Settings() {
 
   return (
     <Layout>
-      {/* ---- Карточка пользователя ---- */}
-      <div className="bg-white rounded-3xl shadow-md p-4 flex items-center gap-4">
-        <Avatar name={profile?.display_name ?? ''} src={profile?.avatar_url} size={72} />
-        <div className="flex-1">
-          <div className="text-xl font-semibold">{profile?.display_name ?? '—'}</div>
-          <div className="text-slate-600 text-sm">{email || '—'}</div>
-        </div>
-      </div>
-
-      {/* ---- Карточка семьи (кликабельная) ---- */}
-      <button
-        onClick={() => navigate('/settings/household')}
-        className="
-          w-full bg-white rounded-3xl shadow-md
-          px-4 py-4 mt-4
-          flex items-center justify-between
-          hover:shadow-lg active:scale-[0.99] transition
-          text-left
-        "
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-100 grid place-items-center">
-            <HouseIcon className="w-6 h-6 text-indigo-600" />
+      <div>
+        <h1 className="text-center text-2xl font-bold mt-8 mb-6">Настройки</h1>
+        <div className="px-4 space-y-4">
+          {/* Profile Card */}
+          <div className="flex items-center bg-white rounded-xl shadow p-4 mb-2 cursor-pointer" onClick={() => navigate('/profile')}>
+            <Avatar name={profile?.display_name ?? ''} src={profile?.avatar_url} size={48} />
+            <div className="flex-1 ml-4">
+              <div className="font-semibold text-lg">{profile?.display_name ?? '—'}</div>
+              <div className="text-sm text-gray-500">{email || '—'}</div>
+            </div>
+            <span className="ml-2 text-gray-400">&gt;</span>
           </div>
-          <div>
-            <div className="text-base font-medium text-slate-900">Семья</div>
-            <div className="text-sm text-slate-600">{household?.name ?? '—'}</div>
+          {/* Household Card */}
+          <div className="flex items-center bg-white rounded-xl shadow p-4 cursor-pointer" onClick={() => navigate('/household-settings')}>
+            <div className="bg-purple-100 rounded-full p-2 mr-4">
+              <HouseIcon className="w-6 h-6 text-purple-500" />
+            </div>
+            <div className="flex-1 font-semibold text-lg">Мой дом</div>
+            <span className="ml-2 text-gray-400">&gt;</span>
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-slate-400" />
-      </button>
-
-      {/* ---- Большая чёрная кнопка «Выйти» ---- */}
-      <div className="mt-6">
-        <button
-          onClick={handleSignOut}
-          className="
-            w-full rounded-2xl shadow-md bg-slate-900 text-white
-            px-4 py-4 font-bold
-            hover:shadow-lg active:scale-[0.99] transition
-          "
-        >
-          Выйти из аккаунта
-        </button>
+        {/* Logout Button */}
+        <div className="px-4 mt-8">
+          <button
+            onClick={handleSignOut}
+            className="w-full rounded-2xl shadow-md bg-slate-900 text-white px-4 py-4 font-bold hover:shadow-lg active:scale-[0.99] transition"
+          >
+            Выйти из аккаунта
+          </button>
+        </div>
       </div>
     </Layout>
   )

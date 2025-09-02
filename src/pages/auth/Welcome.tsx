@@ -3,28 +3,26 @@ import { useNavigate } from 'react-router-dom'
 export default function Welcome() {
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen relative">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,#F8F9FF_0%,#EDF2FF_100%)]" />
-      {/* Картинка-фон — замени путь при желании */}
-      <div className="absolute inset-x-0 top-0 h-1/2 bg-[url('/illustrations/family.webp')] bg-cover bg-center opacity-90" />
-      <div className="relative z-10 pt-24 px-6 flex flex-col min-h-screen">
-        <h1 className="text-4xl font-extrabold text-center text-[#6C2CF2] drop-shadow mb-6">
-          Добро пожаловать
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-sm px-6 pb-8 pt-16 rounded-b-3xl shadow-none flex flex-col items-center">
+        <h1 className="text-3xl font-extrabold text-center text-black mb-6">
+          Добро пожаловать!
         </h1>
-        <p className="text-center text-slate-600 mb-8">Войдите или создайте аккаунт</p>
-
-        <div className="mt-auto mb-12 space-y-3">
+        <p className="text-center text-slate-500 mb-10 text-base">
+          Превращайте быт в игру вместе с нашим приложением. Вы точно не пожалеете.
+        </p>
+        <div className="w-full space-y-4">
           <button
             onClick={() => navigate('/auth/login')}
-            className="w-full rounded-2xl shadow-md bg-[#6C2CF2] text-white px-4 py-4 font-bold hover:shadow-lg active:scale-[0.99] transition"
+            className="w-full rounded-2xl bg-gradient-to-r from-[#E700FD] to-[#7900FD] text-white px-4 py-3 font-bold shadow-md hover:shadow-lg active:scale-[0.99] transition"
           >
             Войти
           </button>
           <button
             onClick={() => navigate('/auth/register')}
-            className="w-full rounded-2xl shadow-md bg-white text-[#6C2CF2] px-4 py-4 font-bold hover:shadow-lg active:scale-[0.99] transition"
+            className="w-full rounded-2xl border-2 border-[#6C2CF2] text-[#6C2CF2] bg-white px-4 py-3 font-bold shadow-md hover:shadow-lg active:scale-[0.99] transition"
           >
-            Регистрация
+            Зарегистрироваться
           </button>
         </div>
       </div>

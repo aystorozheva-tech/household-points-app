@@ -16,7 +16,11 @@ import Results from './pages/Results'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import ConfigRooms from './pages/ConfigRooms'
+import NewRoom from './pages/NewRoom'
+import ChooseRoomIcon from './pages/ChooseRoomIcon'
+import EditRoom from './pages/EditRoom'
 import ConfigTasks from './pages/ConfigTasks'
+import AddChore from './pages/AddChore'
 import TaskConfig from './pages/TaskConfig'
 import AddCustomTask from './pages/AddCustomTask'
 import ConfigRewards from './pages/ConfigRewards'
@@ -27,12 +31,22 @@ import EditReward from './pages/EditReward'
 import EditPunishment from './pages/EditPunishment'
 import EditTask from './pages/EditTask'
 import HouseholdSettings from './pages/HouseholdSettings'
+import ConfigMembers from './pages/ConfigMembers'
+import InviteScreen from './pages/InviteScreen'
+import ChooseChoreIcon from './pages/ChooseChoreIcon'
+import ChooseRooms from './pages/ChooseRooms'
 
 // AUTH pages (вне AppLayout!)
 import Welcome from './pages/auth/Welcome'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
-import FamilySetup from './pages/auth/FamilySetup'
+import PasswordRecovery from './pages/auth/PasswordRecovery'
+import EmailConfirmationRequest from './pages/auth/EmailConfirmationRequest'
+import EmailConfirmationSuccess from './pages/auth/EmailConfirmationSuccess'
+import ConfigureHouse1 from './pages/auth/ConfigureHouse1'
+import ConfigureHouseInvite from './pages/auth/ConfigureHouseInvite'
+import AllowPush from './pages/auth/AllowPush'
+import SignUpComplete from './pages/auth/SignUpComplete'
 
 // простая обёртка для auth-ветки
 function AuthShell() {
@@ -52,7 +66,14 @@ const router = createHashRouter([
       { path: 'welcome', element: <Welcome /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
-      { path: 'family', element: <FamilySetup /> },
+      { path: 'password-recovery', element: <PasswordRecovery /> },
+      { path: 'email-confirmation', element: <EmailConfirmationRequest /> },
+      { path: 'email-confirmed', element: <EmailConfirmationSuccess /> },
+      { path: 'home-settings-start', element: <div>HomeSettingsStart (TODO)</div> },
+      { path: 'configure-house-1', element: <ConfigureHouse1 /> },
+      { path: 'configure-house-invite', element: <ConfigureHouseInvite /> },
+      { path: 'allow-push', element: <AllowPush /> },
+      { path: 'sign-up-complete', element: <SignUpComplete /> },
     ],
   },
 
@@ -67,14 +88,18 @@ const router = createHashRouter([
       { path: 'add/custom/:id', element: <AddTask /> },
       { path: 'reward', element: <RewardSelect /> },
       { path: 'punish', element: <PunishSelect /> },
+      { path: 'choose-rooms/:id', element: <ChooseRooms /> },
       { path: 'history', element: <History /> },
       { path: 'results', element: <Results /> },
       { path: 'settings', element: <Settings /> },
       { path: 'profile', element: <Profile /> },
       { path: 'config/flat', element: <ConfigRooms /> },
+      { path: 'new-room', element: <NewRoom /> },
+      { path: 'choose-room-icon', element: <ChooseRoomIcon /> },
+      { path: 'edit-room/:id', element: <EditRoom /> },
       { path: 'config/tasks', element: <ConfigTasks /> },
       { path: 'config/task/:id', element: <TaskConfig /> },
-      { path: 'config/tasks/add', element: <AddCustomTask /> },
+      { path: 'config/tasks/add', element: <AddChore /> },
       { path: 'config/rewards', element: <ConfigRewards /> },
       { path: 'config/rewards/add', element: <AddReward /> },
       { path: 'config/punishments', element: <ConfigPunishments /> },
@@ -82,7 +107,11 @@ const router = createHashRouter([
       { path: 'config/rewards/:id', element: <EditReward /> },
       { path: 'config/punishments/:id', element: <EditPunishment /> },
       { path: 'config/tasks/:id', element: <EditTask /> },
+      { path: 'choose-chore-icon', element: <ChooseChoreIcon /> },
       { path: 'settings/household', element: <HouseholdSettings /> },
+      { path: 'household-settings', element: <HouseholdSettings /> },
+      { path: 'config-members', element: <ConfigMembers /> },
+      { path: 'invite', element: <InviteScreen /> },
     ],
   },
 ])

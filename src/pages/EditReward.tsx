@@ -1,89 +1,116 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { db } from '../db'
+import { supabase } from '../lib/supabase'
 
 export default function EditReward() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
-  const [emoji, setEmoji] = useState('🎁')
   const [points, setPoints] = useState<number>(10)
+  const [isCommon, setIsCommon] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id) return
-    db.rewards.get(id).then(r => {
-      if (r) {
-        setTitle(r.title)
-        setEmoji(r.emoji)
-        setPoints(r.points)
-      }
-    })
+    let mounted = true
+    ;(async () => {
+      if (!id) return
+      const { data, error } = await supabase
+        .from('rewards')
+        .select('id, name_ru, points_cnt, common_for_household_flg')
+        .eq('id', id)
+        .single()
+      if (!mounted) return
+      if (error) { setError(error.message); setLoading(false); return }
+      setTitle((data as any)?.name_ru ?? '')
+      setPoints((data as any)?.points_cnt ?? 0)
+      setIsCommon(!!(data as any)?.common_for_household_flg)
+      setLoading(false)
+    })()
+    return () => { mounted = false }
   }, [id])
 
   async function save() {
     if (!id) return
-    await db.rewards.update(id, { title, emoji, points })
+    setError(null)
+    setSaving(true)
+    const { error } = await supabase
+      .from('rewards')
+      .update({ name_ru: title.trim(), points_cnt: points, common_for_household_flg: isCommon })
+      .eq('id', id)
+    setSaving(false)
+    if (error) { setError(error.message); return }
     navigate('/config/rewards')
   }
 
   async function remove() {
     if (!id) return
-    await db.rewards.delete(id)
+    setError(null)
+    setDeleting(true)
+    const { error } = await supabase
+      .from('rewards')
+      .delete()
+      .eq('id', id)
+    setDeleting(false)
+    if (error) { setError(error.message); return }
     navigate('/config/rewards')
   }
 
   return (
     <Layout>
-      <h2 className="text-lg font-bold mb-4">Редактировать награду</h2>
+      <div className="w-full max-w-sm mx-auto">
+        <h1 className="text-2xl font-extrabold text-center text-black mb-6">Редактировать награду</h1>
+        {loading ? (
+          <div className="text-center py-6">Загрузка…</div>
+        ) : (
+        <div className="space-y-6">
+          <label className="block">
+            <div className="text-sm text-slate-600 mb-1">Название</div>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-[#6C2CF2]/30 shadow-sm"
+            />
+          </label>
+          <label className="flex items-center gap-3">
+            <input type="checkbox" checked={isCommon} onChange={e => setIsCommon(e.target.checked)} />
+            <span className="text-sm text-slate-700">Общая для домохозяйства</span>
+          </label>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Название</label>
-          <input
-            type="text"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2"
-          />
-        </div>
+          <label className="block">
+            <div className="text-sm text-slate-600 mb-1">Баллы</div>
+            <input
+              type="number"
+              value={points}
+              onChange={e => setPoints(parseInt(e.target.value) || 0)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-[#6C2CF2]/30 shadow-sm"
+            />
+          </label>
 
-        <div>
-          <label className="block text-sm font-medium">Эмодзи</label>
-          <input
-            type="text"
-            value={emoji}
-            onChange={e => setEmoji(e.target.value)}
-            maxLength={2}
-            className="w-full border rounded-lg px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium">Баллы</label>
-          <input
-            type="number"
-            value={points}
-            onChange={e => setPoints(parseInt(e.target.value) || 0)}
-            className="w-full border rounded-lg px-3 py-2"
-          />
-        </div>
-
-        <div className="flex gap-2">
           <button
             onClick={save}
-            disabled={!title.trim() || points <= 0}
-            className="flex-1 rounded-2xl py-3 font-bold bg-cyan-500 text-white"
+            disabled={!title.trim() || points <= 0 || saving}
+            className={`w-full rounded-2xl text-white px-4 py-4 font-bold shadow-md active:scale-[0.99] transition bg-gradient-to-r from-[#E700FD] to-[#7900FD] hover:shadow-lg ${
+              (!title.trim() || points <= 0 || saving) ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
-            Сохранить
+            {saving ? 'Сохранение…' : 'Сохранить'}
           </button>
+
           <button
             onClick={remove}
-            className="flex-1 rounded-2xl py-3 font-bold bg-rose-500 text-white"
+            disabled={deleting || saving}
+            className={`w-full rounded-2xl text-white px-4 py-4 font-bold shadow-md active:scale-[0.99] transition bg-black ${deleting || saving ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}`}
           >
-            Удалить
+            {deleting ? 'Удаление…' : 'Удалить'}
           </button>
+          {error && <div className="text-sm text-red-600">{error}</div>}
         </div>
+        )}
       </div>
     </Layout>
   )

@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
-import { useStore } from '../store'
-import { db } from '../db'
-import { Link, useNavigate } from 'react-router-dom'
-import type { Reward } from '../types'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import type { AppOutletCtx } from '../AppLayout'
+import HeartIcon from '../icons/HeartIcon'
 
 function SelectableRow({
-  active,
   left,
   title,
   subtitle,
   onClick,
 }: {
-  active: boolean
   left: React.ReactNode
   title: string
   subtitle?: string
@@ -25,7 +23,6 @@ function SelectableRow({
         w-full bg-white rounded-2xl shadow-md px-4 py-3
         flex items-center gap-3
         text-left hover:shadow-lg active:scale-[0.99] transition
-        ${active ? 'ring-2 ring-rose-400/70' : ''}
       `}
     >
       <span className="text-2xl leading-none">{left}</span>
@@ -38,62 +35,103 @@ function SelectableRow({
 }
 
 export default function RewardSelect() {
-  const [rewards, setRewards] = useState<Reward[]>([])
-  const [selected, setSelected] = useState<number | null>(null) // индекс в массиве
-  const ownerId = useStore(s => s.ownerId)
   const navigate = useNavigate()
-  const receiverId = ownerId === 'nastya' ? 'max' : 'nastya'
+  const { householdId } = useOutletContext<AppOutletCtx>()
+  const [rewards, setRewards] = useState<Array<{id:string;name_ru:string;points_cnt:number}>>([])
+  const [meId, setMeId] = useState<string | null>(null)
+  const [partnerId, setPartnerId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    db.rewards.toArray().then(rs => setRewards(rs.sort((a, b) => a.points - b.points)))
-  }, [])
+    let mounted = true
+    ;(async () => {
+      setError(null)
+      setLoading(true)
+      const { data: u } = await supabase.auth.getUser()
+      const uid = u.user?.id
+      const { data: profs, error: e1 } = await supabase
+        .from('profiles')
+        .select('id,user_id,household_id,created_at')
+        .eq('household_id', householdId)
+        .order('created_at', { ascending: true })
+      if (!mounted) return
+      if (e1) { setError(e1.message); setLoading(false); return }
+      const me = (profs ?? []).find(p => p.user_id === uid) || null
+      const partner = (profs ?? []).find(p => p.user_id !== uid) || null
+      setMeId(me?.id ?? null)
+      setPartnerId(partner?.id ?? null)
+      setLoading(false)
+    })()
+    return () => { mounted = false }
+  }, [householdId])
+
+  useEffect(() => {
+    if (!partnerId) return
+    let mounted = true
+    ;(async () => {
+      setError(null)
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('rewards')
+        .select('id, name_ru, points_cnt, common_for_household_flg, author_profile_id')
+        .eq('household_id', householdId)
+        .or(`common_for_household_flg.eq.true,author_profile_id.eq.${partnerId}`)
+        .order('points_cnt', { ascending: true })
+      if (!mounted) return
+      if (error) { setError(error.message); setLoading(false); return }
+      setRewards((data ?? []).map(r => ({ id: r.id as string, name_ru: r.name_ru as string, points_cnt: r.points_cnt as number })))
+      setLoading(false)
+    })()
+    return () => { mounted = false }
+  }, [householdId, partnerId])
+
+  async function giveReward(r: {id:string;name_ru:string;points_cnt:number}) {
+    if (!meId) return
+    setError(null)
+    const { error } = await supabase
+      .from('entries')
+      .insert({
+        household_id: householdId,
+        profile_id: meId,
+        kind: 'reward',
+        title: r.name_ru,
+        points: r.points_cnt,
+      })
+      .select('id')
+      .single()
+    if (error) { setError(error.message); return }
+    navigate('/')
+  }
 
   return (
     <Layout>
-      <h1 className="text-xl font-semibold">Выберите награду</h1>
-
-      <div className="space-y-3">
-        {rewards.map((r, i) => (
-          <SelectableRow
-            key={r.id}
-            active={selected === i}
-            left={<span>{r.emoji ?? '🎁'}</span>}
-            title={r.title}
-            subtitle={`${r.points} баллов`}
-            onClick={() => setSelected(i)}
-          />
-        ))}
+      <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-[#F8F9FF] to-[#EDF2FF] px-6">
+        <button onClick={() => navigate('/')} className="absolute left-6 top-6 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md" aria-label="Назад">
+          <span className="text-2xl">←</span>
+        </button>
+        <div className="w-full max-w-sm mt-20">
+          <h1 className="text-3xl font-extrabold text-center text-black mb-6">Выберите награду</h1>
+          {error && <div className="mb-3 text-sm text-rose-600">{error}</div>}
+          {loading ? (
+            <div className="text-center py-6">Загрузка…</div>
+          ) : rewards.length === 0 ? (
+            <div className="text-center text-slate-500 py-6">Нет наград</div>
+          ) : (
+            <div className="space-y-3">
+              {rewards.map(r => (
+                <SelectableRow
+                  key={r.id}
+                  left={<HeartIcon className="w-6 h-6 text-[#7900FD]" />}
+                  title={r.name_ru}
+                  subtitle={`${r.points_cnt} баллов`}
+                  onClick={() => giveReward(r)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-
-      <button
-        onClick={async () => {
-          if (selected === null) return
-          const r = rewards[selected]
-          if (!r) return
-
-          await db.entries.add({
-            id: crypto.randomUUID(),
-            personId: receiverId,        // кому зачесть очки
-            taskId: `reward-${r.id}`,    // помечаем тип записи
-            amount: 1,
-            multiplier: 1,
-            points: r.points,
-            ts: Date.now(),
-            reward: true,
-            punish: false,
-            // в проекте ещё используется rewardGiver:
-            rewardGiver: ownerId,
-          } as any)
-
-          navigate('/')
-        }}
-        className={`mt-6 w-full rounded-2xl py-3 text-white font-bold
-          ${selected !== null ? 'bg-rose-500 hover:bg-rose-600' : 'bg-gray-300 cursor-not-allowed'}`}
-      >
-        Подтвердить
-      </button>
-
-      <Link to="/" className="block mt-4 text-center text-violet-700">← Отмена</Link>
     </Layout>
   )
 }

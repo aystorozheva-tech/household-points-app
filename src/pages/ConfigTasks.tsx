@@ -1,72 +1,101 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Layout from '../components/Layout'
-import { db } from '../db'
-import type { CustomTask } from '../types'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import type { AppOutletCtx } from '../AppLayout'
+import ChevronRightIcon from '../icons/ChevronRightIcon'
+import BroomIcon from '../icons/BroomIcon'
+import MopIcon from '../icons/MopIcon'
+import DishesIcon from '../icons/DishesIcon'
+import FeatherIcon from '../icons/FeatherIcon'
+import TShirtIcon from '../icons/TShirtIcon'
+import ToiletIcon from '../icons/ToiletIcon'
 
-// дефолтные дела с эмодзи
-const defaultTasks = [
-  { id: 'vacuum', title: 'Пропылесосить', emoji: '🧹' },
-  { id: 'floor', title: 'Помыть пол', emoji: '🧼' },
-  { id: 'dishes', title: 'Помыть посуду', emoji: '🍽️' },
-  { id: 'dust', title: 'Протереть пыль', emoji: '🪣' },
-  { id: 'laundry', title: 'Постирать', emoji: '👕' },
-  { id: 'plumbing', title: 'Помыть сантехнику', emoji: '🚽' },
-]
+type Chore = { id: string; name_ru: string; base_points_cnt: number; settings_per_room_flg: boolean; icon_id: string | null }
 
 export default function ConfigTasks() {
-  const [customTasks, setCustomTasks] = useState<CustomTask[]>([])
   const navigate = useNavigate()
+  const { householdId } = useOutletContext<AppOutletCtx>()
+  const [chores, setChores] = useState<Chore[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const IconMap = useMemo(() => ({
+    broom: BroomIcon,
+    mop: MopIcon,
+    dishes: DishesIcon,
+    dust: FeatherIcon,
+    laundry: TShirtIcon,
+    plumbing: ToiletIcon,
+  } as const), [])
 
   useEffect(() => {
-    load()
-  }, [])
-
-  async function load() {
-    setCustomTasks(await db.customTasks.toArray())
-  }
+    let mounted = true
+    ;(async () => {
+      setError(null)
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('chores')
+        .select('id, name_ru, base_points_cnt, settings_per_room_flg, icon_id')
+        .eq('household_id', householdId)
+        .order('created_at', { ascending: true })
+      if (!mounted) return
+      if (error) { setError(error.message); setLoading(false); return }
+      setChores((data ?? []) as Chore[])
+      setLoading(false)
+    })()
+    return () => { mounted = false }
+  }, [householdId])
 
   return (
     <Layout>
-      <h2 className="text-lg font-bold mb-4">Дела</h2>
+      <div className="mb-2">
+        <button
+          onClick={() => navigate('/household-settings')}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md"
+          aria-label="Назад"
+        >
+          <span className="text-2xl">←</span>
+        </button>
+      </div>
+      <h1 className="text-2xl font-extrabold text-center text-black mb-4">Дела</h1>
 
-      <div className="space-y-3">
-        {/* дефолтные дела */}
-        {defaultTasks.map(task => (
-          <Link
-            key={task.id}
-            to={`/config/task/${task.id}`}
-            className="p-3 rounded-xl border bg-sky-50 shadow-sm flex items-center gap-3 hover:bg-sky-100"
-          >
-            <div className="text-3xl">{task.emoji}</div>
-            <div>
-              <div className="font-medium">{task.title}</div>
-              <div className="text-sm text-slate-500">Баллы задаются в настройках</div>
-            </div>
-          </Link>
-        ))}
+      {loading && <div className="text-center py-6">Загрузка…</div>}
+      {error && <div className="text-center text-red-600 py-2 text-sm">{error}</div>}
+      {!loading && chores.length === 0 && (
+        <div className="text-center text-slate-500 mb-4">Нет дел</div>
+      )}
 
-        {/* кастомные дела */}
-        {customTasks.map(ct => (
-          <div
-            key={ct.id}
-            onClick={() => navigate(`/config/tasks/${ct.id}`)}
-            className="p-3 rounded-xl border bg-white shadow-sm flex items-center gap-3 cursor-pointer hover:bg-slate-50"
-          >
-            <div className="text-3xl">{ct.emoji ?? '📝'}</div>
-            <div>
-              <div className="font-medium">{ct.title}</div>
-              <div className="text-sm text-slate-500">{ct.points} баллов</div>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-3 mb-6">
+        {chores.map(c => {
+          const Ico = (c.icon_id && (IconMap as any)[c.icon_id]) || null
+          const IconComp = Ico as (p: { className?: string }) => JSX.Element | null
+          return (
+            <button
+              key={c.id}
+              onClick={() => navigate(`/config/tasks/${c.id}`)}
+              className="w-full bg-white rounded-2xl shadow-md px-4 py-3 flex items-center justify-between hover:shadow-lg transition text-left"
+            >
+              <div className="flex items-center min-w-0">
+                <div className="w-10 h-10 rounded-full bg-slate-100 grid place-items-center mr-3 shrink-0">
+                  {IconComp ? <IconComp className="w-6 h-6 text-[#7900FD]" /> : <span className="text-lg">🧰</span>}
+                </div>
+                <div className="truncate">
+                  <div className="text-base font-semibold text-slate-900 truncate">{c.name_ru}</div>
+                  <div className="text-xs text-slate-500">{c.base_points_cnt} баллов{c.settings_per_room_flg ? ' • есть коэф. по комнатам' : ''}</div>
+                </div>
+              </div>
+              <ChevronRightIcon className="w-5 h-5 text-slate-300" />
+            </button>
+          )
+        })}
       </div>
 
       <button
         onClick={() => navigate('/config/tasks/add')}
-        className="mt-4 w-full rounded-2xl py-3 bg-cyan-500 text-white font-bold"
+        className="w-full rounded-2xl bg-gradient-to-r from-[#E700FD] to-[#7900FD] text-white px-4 py-4 font-bold shadow-md hover:shadow-lg active:scale-[0.99] transition"
       >
-        ＋ Добавить дело
+        + Добавить дело
       </button>
     </Layout>
   )

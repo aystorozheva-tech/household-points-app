@@ -1,114 +1,158 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, type ComponentType } from 'react'
 import Layout from '../components/Layout'
-import { db } from '../db'
-import { Link, useNavigate } from 'react-router-dom'
-import { defaultTaskMeta } from '../defaultTaskMeta'
-import type { CustomTask } from '../types'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import type { AppOutletCtx } from '../AppLayout'
+import ChevronRightIcon from '../icons/ChevronRightIcon'
+import BroomIcon from '../icons/BroomIcon'
+import MopIcon from '../icons/MopIcon'
+import DishesIcon from '../icons/DishesIcon'
+import FeatherIcon from '../icons/FeatherIcon'
+import TShirtIcon from '../icons/TShirtIcon'
+import ToiletIcon from '../icons/ToiletIcon'
 
-type BaseTaskKey = keyof typeof defaultTaskMeta
+type Chore = { id: string; name_ru: string; base_points_cnt: number; settings_per_room_flg: boolean; icon_id: string | null }
 
-function SelectableRow({
-  active,
-  left,
-  title,
-  subtitle,
-  onClick,
-}: {
-  active: boolean
-  left: React.ReactNode
-  title: string
-  subtitle?: string
-  onClick: () => void
-}) {
+function RowButton({ title, subtitle, left, right, onClick }: { title: string; subtitle?: string; left?: React.ReactNode; right?: React.ReactNode; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className={`
-        w-full bg-white rounded-2xl shadow-md px-4 py-3
-        flex items-center justify-between gap-3
-        text-left hover:shadow-lg active:scale-[0.99] transition
-        ${active ? 'ring-2 ring-violet-500/70' : ''}
-      `}
-    >
-      <span className="flex items-center gap-3">
-        <span className="text-2xl leading-none">{left}</span>
-        <span className="flex flex-col">
-          <span className="font-medium text-slate-900">{title}</span>
-          {subtitle && <span className="text-xs text-slate-500">{subtitle}</span>}
-        </span>
-      </span>
-      <svg viewBox="0 0 24 24" className="w-5 h-5 text-slate-400" fill="none">
-        <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+    <button onClick={onClick} className="w-full bg-white rounded-2xl shadow-md px-4 py-3 flex items-center justify-between hover:shadow-lg active:scale-[0.99] transition">
+      <div className="flex items-center min-w-0 gap-3">
+        {left && <div className="w-10 h-10 rounded-full bg-slate-100 grid place-items-center shrink-0">{left}</div>}
+        <div className="min-w-0">
+          <div className="text-base font-semibold text-slate-900 truncate">{title}</div>
+          {subtitle && <div className="text-xs text-slate-500">{subtitle}</div>}
+        </div>
+      </div>
+      {right}
     </button>
   )
 }
 
 export default function ChooseTask() {
-  const [customTasks, setCustomTasks] = useState<CustomTask[]>([])
-  const [selected, setSelected] = useState<string | null>(null) // base key ИЛИ `custom:{id}`
   const navigate = useNavigate()
+  const { householdId } = useOutletContext<AppOutletCtx>()
+  const [chores, setChores] = useState<Chore[]>([])
+  const [meId, setMeId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    db.customTasks.toArray().then(setCustomTasks)
-  }, [])
+    let mounted = true
+    ;(async () => {
+      setError(null)
+      setLoading(true)
+      const { data: u } = await supabase.auth.getUser()
+      const uid = u.user?.id
+      const { data: profs, error: e1 } = await supabase
+        .from('profiles')
+        .select('id,user_id,household_id')
+        .eq('household_id', householdId)
+      if (!mounted) return
+      if (e1) { setError(e1.message); setLoading(false); return }
+      const me = (profs ?? []).find(p => p.user_id === uid) || null
+      setMeId(me?.id ?? null)
+      setLoading(false)
+    })()
+    return () => { mounted = false }
+  }, [householdId])
 
-  const baseTasks = Object.entries(defaultTaskMeta) as [BaseTaskKey, typeof defaultTaskMeta[BaseTaskKey]][]
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      setError(null)
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('chores')
+        .select('id, name_ru, base_points_cnt, settings_per_room_flg, icon_id')
+        .eq('household_id', householdId)
+        .order('created_at', { ascending: true })
+      if (!mounted) return
+      if (error) { setError(error.message); setLoading(false); return }
+      setChores((data ?? []) as Chore[])
+      setLoading(false)
+    })()
+    return () => { mounted = false }
+  }, [householdId])
+
+  async function addSimple(chore: Chore) {
+    if (!meId) return
+    setError(null)
+    const { error } = await supabase
+      .from('entries')
+      .insert({
+        household_id: householdId,
+        profile_id: meId,
+        kind: 'task',
+        title: chore.name_ru,
+        points: chore.base_points_cnt,
+      })
+      .select('id')
+      .single()
+    if (error) { setError(error.message); return }
+    navigate('/')
+  }
+
+  const simple = useMemo(() => chores.filter(c => !c.settings_per_room_flg), [chores])
+  const difficult = useMemo(() => chores.filter(c => c.settings_per_room_flg), [chores])
+
+  const IconMap: Record<string, ComponentType<{className?:string}>> = {
+    broom: BroomIcon,
+    mop: MopIcon,
+    dishes: DishesIcon,
+    dust: FeatherIcon,
+    laundry: TShirtIcon,
+    plumbing: ToiletIcon,
+  }
 
   return (
     <Layout>
-      <h1 className="text-xl font-semibold">Выберите дело</h1>
-
-      {/* Базовые дела (у них нет points -> subtitle не показываем) */}
-      <div className="space-y-3">
-        {baseTasks.map(([key, meta]) => (
-          <SelectableRow
-            key={key}
-            active={selected === key}
-            left={<span>{meta.emoji}</span>}
-            title={meta.title}
-            onClick={() => setSelected(key)}
-          />
-        ))}
+      <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-[#F8F9FF] to-[#EDF2FF] px-6">
+        <button onClick={() => navigate('/')} className="absolute left-6 top-6 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md" aria-label="Назад">
+          <span className="text-2xl">←</span>
+        </button>
+        <div className="w-full max-w-sm mt-20">
+          <h1 className="text-3xl font-extrabold text-center text-black mb-6">Выберите дело</h1>
+          {error && <div className="mb-3 text-sm text-rose-600">{error}</div>}
+          {loading ? (
+            <div className="text-center py-6">Загрузка…</div>
+          ) : (
+            <>
+              {simple.length > 0 && (
+                <div className="space-y-3 mb-6">
+                  {simple.map(c => {
+                    const Ico = c.icon_id ? IconMap[c.icon_id] : undefined
+                    return (
+                      <RowButton
+                        key={c.id}
+                        title={c.name_ru}
+                        subtitle={`+${c.base_points_cnt} баллов`}
+                        left={Ico ? <Ico className="w-6 h-6 text-[#7900FD]"/> : undefined}
+                        onClick={() => addSimple(c)}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+              {difficult.length > 0 && (
+                <div className="space-y-3">
+                  {difficult.map(c => {
+                    const Ico = c.icon_id ? IconMap[c.icon_id] : undefined
+                    return (
+                      <RowButton
+                        key={c.id}
+                        title={c.name_ru}
+                        left={Ico ? <Ico className="w-6 h-6 text-[#7900FD]"/> : undefined}
+                        right={<ChevronRightIcon className="w-5 h-5 text-slate-300" />}
+                        onClick={() => navigate(`/choose-rooms/${c.id}`)}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-
-      {/* Кастомные дела (у них есть points -> показываем) */}
-      {customTasks.length > 0 && (
-        <>
-          <div className="mt-6 text-sm font-semibold text-slate-600">Пользовательские дела</div>
-          <div className="space-y-3 mt-2">
-            {customTasks.map(t => (
-              <SelectableRow
-                key={t.id}
-                active={selected === `custom:${t.id}`}
-                left={<span>{t.emoji ?? '🧹'}</span>}
-                title={t.title}
-                subtitle={typeof t.points === 'number' ? `+${t.points} баллов` : undefined}
-                onClick={() => setSelected(`custom:${t.id}`)}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* CTA */}
-      <button
-        onClick={() => {
-          if (!selected) return
-          if (selected.startsWith('custom:')) {
-            const id = selected.split(':')[1]
-            navigate(`/add/custom/${id}`)
-          } else {
-            navigate(`/add/${selected}`)
-          }
-        }}
-        className={`mt-6 w-full rounded-2xl py-3 text-white font-bold
-          ${selected ? 'bg-violet-600 hover:bg-violet-700' : 'bg-gray-300 cursor-not-allowed'}`}
-      >
-        Подтвердить
-      </button>
-
-      <Link to="/" className="block mt-4 text-center text-violet-700">← Отмена</Link>
     </Layout>
   )
 }

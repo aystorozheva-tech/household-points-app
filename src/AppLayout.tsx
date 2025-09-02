@@ -71,8 +71,8 @@ export default function AppLayout() {
         navigate('/auth/welcome', { replace: true })
       }
     } else if (stage === 'needOnboarding') {
-      if (location.pathname !== '/auth/family') {
-        navigate('/auth/family', { replace: true })
+      if (location.pathname !== '/auth/configure-house-1') {
+        navigate('/auth/configure-house-1', { replace: true })
       }
     } else if (stage === 'ready') {
       if (location.pathname.startsWith('/auth')) {
@@ -85,9 +85,17 @@ export default function AppLayout() {
 
   // В этих стадиях отдаём роутеру рисовать нужные страницы (/auth/… или /)
   if (stage === 'needAuth' || stage === 'needOnboarding') {
-    return <Outlet />
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#F8F9FF] to-[#EDF2FF]">
+        <Outlet />
+      </div>
+    )
   }
 
   // ready
-  return <Outlet context={{ householdId: householdId! } satisfies AppOutletCtx} />
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#F8F9FF] to-[#EDF2FF]">
+      <Outlet context={{ householdId: householdId! } satisfies AppOutletCtx} />
+    </div>
+  )
 }

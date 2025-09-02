@@ -1,54 +1,61 @@
 import { useEffect, useState } from 'react'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { db } from '../db'
-import type { Entry, Room, Reward, Punishment } from '../types'
+import { supabase } from '../lib/supabase'
+import type { AppOutletCtx } from '../AppLayout'
+
+type EntryRow = {
+  id: string
+  household_id: string
+  profile_id: string
+  kind: 'task' | 'reward' | 'penalty'
+  title: string
+  points: number
+  created_at: string
+  profile?: { display_name: string | null; avatar_url: string | null } | null
+}
 
 export default function History() {
-  const [entries, setEntries] = useState<Entry[]>([])
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [rewards, setRewards] = useState<Reward[]>([])
-  const [punishments, setPunishments] = useState<Punishment[]>([])
+  const { householdId } = useOutletContext<AppOutletCtx>()
+  const [items, setItems] = useState<EntryRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    db.entries.orderBy('ts').reverse().toArray().then(setEntries)
-    db.rooms.toArray().then(setRooms)
-    db.rewards.toArray().then(setRewards)
-    db.punishments.toArray().then(setPunishments)
-  }, [])
+    let mounted = true
+    ;(async () => {
+      setError(null)
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('entries')
+        .select('id, household_id, profile_id, kind, title, points, created_at, profile:profiles(display_name, avatar_url)')
+        .eq('household_id', householdId)
+        .order('created_at', { ascending: false })
+      if (!mounted) return
+      if (error) { setError(error.message); setLoading(false); return }
+      setItems((data ?? []) as EntryRow[])
+      setLoading(false)
+    })()
+    return () => { mounted = false }
+  }, [householdId])
 
   return (
     <Layout>
       <h2 className="text-lg font-bold mb-4">История</h2>
+      {loading && <div className="text-center py-6">Загрузка…</div>}
+      {error && <div className="text-center text-red-600 py-2 text-sm">{error}</div>}
       <div className="space-y-3">
-        {entries.map(e => (
-          <div
-            key={e.id}
-            className="flex items-center gap-3 p-3 rounded-xl border bg-white shadow-sm"
-          >
-            {/* аватарка исполнителя */}
-            <img
-              src={e.personId === 'nastya' ? '/avatars/nastya.jpeg' : '/avatars/max.jpeg'}
-              alt={e.personId === 'nastya' ? 'Настя' : 'Макс'}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-
-            {/* текст и баллы */}
-            <div className="flex-1">
+        {items.map(e => (
+          <div key={e.id} className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-md">
+            <Avatar url={e.profile?.avatar_url || undefined} name={e.profile?.display_name || '—'} />
+            <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
-                <span className="font-medium">
-                  {describeEntry(e, rooms, rewards, punishments)}
-                </span>
-                <span
-                  className={`font-bold ${
-                    e.points >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
+                <span className="font-semibold text-slate-900 truncate">{e.title}</span>
+                <span className={`font-bold ${e.points >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {e.points > 0 ? '+' : ''}{e.points}
                 </span>
               </div>
-              <div className="text-xs text-slate-500">
-                {new Date(e.ts).toLocaleString('ru-RU')}
-              </div>
+              <div className="text-xs text-slate-500">{new Date(e.created_at).toLocaleString('ru-RU')}</div>
             </div>
           </div>
         ))}
@@ -57,62 +64,12 @@ export default function History() {
   )
 }
 
-/* ---------- Хелпер ---------- */
-function describeEntry(
-  e: Entry,
-  rooms: Room[],
-  rewards: Reward[],
-  punishments: Punishment[]
-): string {
-  if (e.taskId.startsWith('vacuum')) {
-    const mode = e.taskId.includes('robot') ? 'Робот' : 'Вручную'
-    const rid = e.taskId.split('-')[1]
-    const roomName = rooms.find(r => r.id === rid)?.title ?? ''
-    return `Пропылесосить — ${roomName} (${mode})`
-  }
-
-  if (e.taskId.startsWith('floor')) {
-    const mode = e.taskId.includes('robot') ? 'Робот' : 'Вручную'
-    const rid = e.taskId.split('-')[1]
-    const roomName = rooms.find(r => r.id === rid)?.title ?? ''
-    return `Помыть пол — ${roomName} (${mode})`
-  }
-
-  if (e.taskId.startsWith('dishes')) {
-    return e.taskId.includes('dw')
-      ? 'Помыть посуду — Посудомойка'
-      : 'Помыть посуду — Вручную'
-  }
-
-  if (e.taskId.startsWith('dust')) {
-    return 'Протереть пыль'
-  }
-
-  if (e.taskId.startsWith('laundry')) {
-    return 'Постирать'
-  }
-
-  if (e.taskId.startsWith('plumbing')) {
-    return 'Помыть сантехнику'
-  }
-
-  if (e.taskId.startsWith('reward')) {
-    const id = e.taskId.replace('reward-', '')
-    const reward = rewards.find(r => r.id === id)
-    if (reward) {
-      return `${reward.emoji} ${reward.title} от ${e.rewardGiver === 'nastya' ? 'Насти' : 'Макса'}`
-    }
-    return 'Награда'
-  }
-
-  if (e.taskId.startsWith('punish')) {
-    const id = e.taskId.replace('punish-', '')
-    const punish = punishments.find(p => p.id === id)
-    if (punish) {
-      return `${punish.emoji} ${punish.title} от ${e.rewardGiver === 'nastya' ? 'Насти' : 'Макса'}`
-    }
-    return 'Наказание'
-  }
-
-  return `Кастомное дело`
+function Avatar({ url, name }: { url?: string; name: string }) {
+  if (url) return <img src={url} alt={name} className="w-12 h-12 rounded-full object-cover" />
+  const initials = (name || '🙂').trim().split(/\s+/).map(w => w[0]?.toUpperCase()).slice(0,2).join('') || '🙂'
+  return (
+    <div className="w-12 h-12 rounded-full bg-slate-200 grid place-items-center text-slate-700 font-semibold">
+      {initials}
+    </div>
+  )
 }

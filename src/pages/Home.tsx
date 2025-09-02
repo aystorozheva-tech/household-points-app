@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Layout from '../components/Layout'
-import { db } from '../db'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import type { Reward } from '../types'
 import CheckIcon from '../icons/CheckIcon'
 import HeartIcon from '../icons/HeartIcon'
 import WarningIcon from '../icons/WarningIcon'
@@ -201,12 +199,41 @@ export default function Home() {
   const myPoints = totals.nastya
   const otherPoints = totals.max
 
-  const { target, progress } = useProgress('nastya', myPoints, otherPoints)
+  const [motivations, setMotivations] = useState<Array<{ id: string; name_ru: string; points_cnt: number }>>([])
+  useEffect(() => {
+    if (!me?.id) return
+    let mounted = true
+    ;(async () => {
+      const { data } = await supabase
+        .from('rewards')
+        .select('id, name_ru, points_cnt')
+        .eq('household_id', householdId)
+        .eq('author_profile_id', me.id)
+        .order('points_cnt', { ascending: true })
+      if (!mounted) return
+      setMotivations((data ?? []) as any)
+    })()
+    return () => { mounted = false }
+  }, [me?.id, householdId])
 
   const leaderId = useMemo<'nastya' | 'max' | null>(() => {
     if (totals.nastya === totals.max) return null
     return totals.nastya > totals.max ? 'nastya' : 'max'
   }, [totals])
+
+  // --- Status message (absolute diff, clearer colors) ---
+  let statusText = ''
+  let statusColor = ''
+  const diff = myPoints - otherPoints
+  if (diff < 0) {
+    statusText = `Ты проигрываешь на ${Math.abs(diff)}`
+    statusColor = 'text-rose-500'
+  } else if (diff > 0) {
+    statusText = `Ты ведёшь на ${diff}`
+    statusColor = 'text-emerald-600'
+  }
+
+  // motivations are loaded above
 
   if (loading) {
     return <Layout><div className="p-4">Загрузка…</div></Layout>
@@ -217,65 +244,69 @@ export default function Home() {
 
   return (
     <Layout>
-      {/* Текущий слева (крупнее), партнёр справа */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Player cards */}
+      <div className="grid grid-cols-2 gap-4 mb-2">
         <PlayerCard
           name={myName}
           points={myPoints}
           isCurrent={true}
           isLeader={leaderId === 'nastya'}
+          avatarUrl={me?.avatar_url ?? undefined}
         />
         <PlayerCard
           name={partnerName}
           points={otherPoints}
           isCurrent={false}
           isLeader={leaderId === 'max'}
+          avatarUrl={partner?.avatar_url ?? undefined}
         />
       </div>
-
-      {/* Прогресс */}
-      <div className="pt-2">
-        <div className="w-full h-4 rounded-full bg-white/60 shadow-inner">
-          <div
-            className="
-              h-4 rounded-full transition-all
-              bg-[linear-gradient(90deg,#C084FC_0%,#7C3AED_60%,#4F46E5_100%)]
-            "
-            style={{ width: `${Math.min(100, progress * 100)}%` }}
-          />
-        </div>
-
-        {target && (
-          <>
-            <div className="text-sm text-slate-700 text-center mt-2">
-              {Math.max(0, myPoints - otherPoints)} / {target.points}
-            </div>
-            <div className="text-xs text-slate-500 text-center">
-              Ближайшая цель: <span className="font-medium">
-                {target.emoji} {target.title}
-              </span> · {target.points} баллов
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Действия */}
-      <div className="space-y-3 pt-1">
-        <ActionRow
-          label="Сделать"
-          icon={<CheckIcon className="w-6 h-6 text-emerald-600" />}
-          onClick={() => navigate('/choose')}
-        />
-        <ActionRow
+      {/* Status message */}
+      {statusText && (
+        <div className={`text-center text-base font-semibold mb-3 ${statusColor}`}>{statusText}</div>
+      )}
+      {/* Actions row (primary = Сделать) */}
+      <div className="flex gap-3 mb-6">
+        <ActionCircle
           label="Наградить"
-          icon={<HeartIcon className="w-6 h-6 text-rose-500" />}
+          icon={<HeartIcon className="w-7 h-7 text-[#7900FD]" />}
           onClick={() => navigate('/reward')}
         />
-        <ActionRow
+        <ActionCircle
+          label="Сделать"
+          icon={<CheckIcon className="w-7 h-7 text-[#7900FD]" />}
+          onClick={() => navigate('/choose')}
+        />
+        <ActionCircle
           label="Наказать"
-          icon={<WarningIcon className="w-6 h-6 text-orange-500" />}
+          icon={<WarningIcon className="w-7 h-7 text-[#7900FD]" />}
           onClick={() => navigate('/punish')}
         />
+      </div>
+      {/* Motivations (authored by me) */}
+      <div className="mb-3">
+        <div className="text-lg font-bold mb-2">Мои мотивации</div>
+        {motivations.length === 0 ? (
+          <div className="text-sm text-slate-500">Нет мотиваций</div>
+        ) : (
+          <div className="space-y-2">
+            {motivations.map(m => {
+              const numerator = Math.max(0, diff)
+              const pct = numerator <= 0 ? 0 : Math.min(1, numerator / Math.max(1, m.points_cnt))
+              return (
+                <div key={m.id}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{m.name_ru}</span>
+                    <span>{numerator}/{m.points_cnt}</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200">
+                    <div className="h-2 rounded-full bg-gradient-to-r from-[#E700FD] to-[#7900FD]" style={{ width: `${pct * 100}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </Layout>
   )
@@ -306,55 +337,56 @@ function PlayerCard({
   points,
   isCurrent,
   isLeader,
+  avatarUrl,
 }: {
   name: string
   points: number
   isCurrent: boolean
   isLeader: boolean
+  avatarUrl?: string
 }) {
   return (
     <div
       className={`
-        bg-white rounded-3xl shadow-md p-4 flex flex-col items-center relative
-        transition-transform ${isCurrent ? 'scale-[1.1]' : 'scale-[0.95]'}
+        bg-white rounded-3xl shadow-md p-4 flex flex-col items-center relative overflow-hidden
+        transition-transform ${isCurrent ? 'scale-[1.05]' : 'scale-[0.98]'} w-full
       `}
     >
       <div className="relative">
-        <InitialsAvatar name={name} size={isCurrent ? 80 : 64} />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={name} className="rounded-full object-cover" style={{width: isCurrent ? 80 : 64, height: isCurrent ? 80 : 64}} />
+        ) : (
+          <InitialsAvatar name={name} size={isCurrent ? 80 : 64} />
+        )}
         {isLeader && (
           <CrownIcon className="absolute -top-6 right-6 w-8 h-8 text-yellow-400 drop-shadow" />
         )}
       </div>
-      <div className="mt-2 text-xl font-semibold">{name}</div>
+      <div className="mt-2 text-xl font-semibold truncate w-full text-center">{name}</div>
       <div className="text-slate-600">{points} баллов</div>
     </div>
   )
 }
 
-function ActionRow({
+function ActionCircle({
   label,
   icon,
   onClick,
+  variant = 'default',
 }: {
   label: string
   icon: React.ReactNode
   onClick: () => void
+  variant?: 'default' | 'primary'
 }) {
+  const base = 'flex-1 flex flex-col items-center justify-center rounded-2xl shadow-md px-4 py-3 hover:shadow-lg active:scale-[0.99] transition min-w-0'
+  const cls = variant === 'primary'
+    ? `bg-gradient-to-r from-[#E700FD] to-[#7900FD] text-white`
+    : `bg-white text-slate-900`
   return (
-    <button
-      onClick={onClick}
-      className="
-        w-full bg-white rounded-2xl shadow-md
-        px-4 py-4
-        flex items-center justify-between
-        hover:shadow-lg active:scale-[0.99] transition
-      "
-    >
-      <span className="flex items-center gap-3">
-        {icon}
-        <span className="text-base font-medium text-slate-900">{label}</span>
-      </span>
-      <ChevronRight className="w-5 h-5 text-slate-400" />
+    <button onClick={onClick} className={`${base} ${cls}`}>
+      {icon}
+      <span className={`text-sm font-bold mt-1 ${variant === 'primary' ? 'text-white' : 'text-slate-900'} truncate`}>{label}</span>
     </button>
   )
 }
@@ -368,34 +400,4 @@ function ChevronRight({ className = '' }: { className?: string }) {
 }
 
 /* ---------- Хук прогресса (как был) ---------- */
-function useProgress(
-  ownerId: 'nastya' | 'max', // «nastya» = текущий, «max» = партнёр
-  myPoints: number,
-  otherPoints: number
-) {
-  const [target, setTarget] = useState<Reward | null>(null)
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    async function calc() {
-      const rewards = await db.rewards.toArray()
-      if (rewards.length === 0) {
-        setTarget(null); setProgress(0); return
-      }
-      rewards.sort((a, b) => a.points - b.points)
-      const diff = myPoints - otherPoints
-
-      if (diff <= 0) { setTarget(rewards[0]); setProgress(0); return }
-
-      const found = rewards.find(r => r.points > diff)
-      if (found) { setTarget(found); setProgress(diff / found.points) }
-      else {
-        const last = rewards[rewards.length - 1]
-        setTarget(last); setProgress(Math.min(1, diff / last.points))
-      }
-    }
-    calc()
-  }, [myPoints, otherPoints, ownerId])
-
-  return { target, progress }
-}
+// legacy useProgress removed (now driven by Supabase rewards)
