@@ -20,7 +20,7 @@ export default function ConfigureHouse1() {
           У меня есть приглашение
         </button>
         <button
-          onClick={() => {}}
+          onClick={() => navigate('/auth/new-house-name')}
           className="w-full rounded-2xl border-2 border-[#6C2CF2] text-[#6C2CF2] bg-white px-4 py-4 font-bold shadow-md hover:shadow-lg active:scale-[0.99] transition"
         >
           Настроить новый дом

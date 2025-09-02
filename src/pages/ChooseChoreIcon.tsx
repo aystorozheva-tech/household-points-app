@@ -8,6 +8,7 @@ import DishesIcon from '../icons/DishesIcon'
 import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
+import TrashIcon from '../icons/TrashIcon'
 
 type Option = { id: string; label: string; Icon: React.ComponentType<{ className?: string }> }
 
@@ -18,6 +19,7 @@ const OPTIONS: Option[] = [
   { id: 'dust', label: 'Пыль', Icon: FeatherIcon },
   { id: 'laundry', label: 'Стирка', Icon: TShirtIcon },
   { id: 'plumbing', label: 'Санузел', Icon: ToiletIcon },
+  { id: 'trash', label: 'Мусор', Icon: TrashIcon },
 ]
 
 export default function ChooseChoreIcon() {

@@ -47,6 +47,9 @@ import ConfigureHouse1 from './pages/auth/ConfigureHouse1'
 import ConfigureHouseInvite from './pages/auth/ConfigureHouseInvite'
 import AllowPush from './pages/auth/AllowPush'
 import SignUpComplete from './pages/auth/SignUpComplete'
+import NewHouseName from './pages/auth/NewHouseName'
+import NewHouseRooms from './pages/auth/NewHouseRooms'
+import NewHouseTasks from './pages/auth/NewHouseTasks'
 
 // простая обёртка для auth-ветки
 function AuthShell() {
@@ -71,6 +74,9 @@ const router = createHashRouter([
       { path: 'email-confirmed', element: <EmailConfirmationSuccess /> },
       { path: 'home-settings-start', element: <div>HomeSettingsStart (TODO)</div> },
       { path: 'configure-house-1', element: <ConfigureHouse1 /> },
+      { path: 'new-house-name', element: <NewHouseName /> },
+      { path: 'new-house-rooms', element: <NewHouseRooms /> },
+      { path: 'new-house-tasks', element: <NewHouseTasks /> },
       { path: 'configure-house-invite', element: <ConfigureHouseInvite /> },
       { path: 'allow-push', element: <AllowPush /> },
       { path: 'sign-up-complete', element: <SignUpComplete /> },

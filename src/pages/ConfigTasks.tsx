@@ -11,6 +11,7 @@ import DishesIcon from '../icons/DishesIcon'
 import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
+import TrashIcon from '../icons/TrashIcon'
 
 type Chore = { id: string; name_ru: string; base_points_cnt: number; settings_per_room_flg: boolean; icon_id: string | null }
 
@@ -28,6 +29,7 @@ export default function ConfigTasks() {
     dust: FeatherIcon,
     laundry: TShirtIcon,
     plumbing: ToiletIcon,
+    trash: TrashIcon,
   } as const), [])
 
   useEffect(() => {

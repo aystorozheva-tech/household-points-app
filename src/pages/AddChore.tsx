@@ -10,6 +10,7 @@ import DishesIcon from '../icons/DishesIcon'
 import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
+import TrashIcon from '../icons/TrashIcon'
 
 type Room = { id: string; name_ru: string }
 
@@ -64,6 +65,7 @@ export default function AddChore() {
     dust: FeatherIcon,
     laundry: TShirtIcon,
     plumbing: ToiletIcon,
+    trash: TrashIcon,
   } as const), [])
 
   function IconPreview() {
