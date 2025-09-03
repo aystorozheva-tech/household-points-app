@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
-import RoomsIcon from '../icons/RoomsIcon'
-import TasksIcon from '../icons/CheckIcon'
+import SofaIcon from '../icons/SofaIcon'
+import MopIcon from '../icons/MopIcon'
 import HeartIcon from '../icons/HeartIcon'
-import WarningIcon from '../icons/WarningIcon'
-import MembersIcon from '../icons/MembersIcon'
+import BrokenHeartIcon from '../icons/BrokenHeartIcon'
+import PeopleIcon from '../icons/PeopleIcon'
 
 export default function HouseholdSettings() {
   const navigate = useNavigate()
@@ -18,31 +18,31 @@ export default function HouseholdSettings() {
         <div className="px-4 space-y-4">
           {/* Rooms Card */}
           <div className="flex items-center bg-white rounded-xl shadow p-4 cursor-pointer" onClick={() => navigate('/config/flat')}>
-            <RoomsIcon className="w-6 h-6 bg-purple-500 rounded-full p-2 mr-4 text-white" />
+            <SofaIcon className="w-8 h-8 mr-4 text-purple-700" />
             <div className="flex-1 font-semibold text-lg">Комнаты</div>
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>
           {/* Tasks Card */}
           <div className="flex items-center bg-white rounded-xl shadow p-4 cursor-pointer" onClick={() => navigate('/config/tasks')}>
-            <TasksIcon className="w-6 h-6 bg-purple-100 rounded-full p-2 mr-4 text-purple-500" />
+            <MopIcon className="w-8 h-8 mr-4 text-purple-500" />
             <div className="flex-1 font-semibold text-lg">Хлопоты</div>
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>
           {/* Motivations Card */}
           <div className="flex items-center bg-white rounded-xl shadow p-4 cursor-pointer" onClick={() => navigate('/config/rewards')}>
-            <HeartIcon className="w-6 h-6 bg-pink-100 rounded-full p-2 mr-4 text-pink-500" />
+            <HeartIcon className="w-8 h-8 mr-4 text-purple-300" />
             <div className="flex-1 font-semibold text-lg">Мотивации</div>
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>
           {/* Punishments Card */}
           <div className="flex items-center bg-white rounded-xl shadow p-4 cursor-pointer" onClick={() => navigate('/config/punishments')}>
-            <WarningIcon className="w-6 h-6 bg-gray-200 rounded-full p-2 mr-4 text-gray-700" />
+            <BrokenHeartIcon className="w-8 h-8 mr-4 text-gray-400" />
             <div className="flex-1 font-semibold text-lg">Наказания</div>
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>
           {/* Participants Card */}
           <div className="flex items-center bg-white rounded-xl shadow p-4 cursor-pointer" onClick={() => navigate('/config-members')}>
-            <MembersIcon className="w-6 h-6 bg-black rounded-full p-2 mr-4 text-white" />
+            <PeopleIcon className="w-8 h-8 mr-4 text-black" />
             <div className="flex-1 font-semibold text-lg">Участники</div>
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>

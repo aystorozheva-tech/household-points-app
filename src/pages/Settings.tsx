@@ -105,7 +105,7 @@ export default function Settings() {
         <div className="px-4 space-y-4">
           {/* Profile Card */}
           <div className="flex items-center bg-white rounded-xl shadow p-4 mb-2 cursor-pointer" onClick={() => navigate('/profile')}>
-            <Avatar name={profile?.display_name ?? ''} src={profile?.avatar_url} size={48} />
+            <Avatar name={(profile?.display_name || email || '')} src={profile?.avatar_url} size={48} />
             <div className="flex-1 ml-4">
               <div className="font-semibold text-lg">{profile?.display_name ?? '—'}</div>
               <div className="text-sm text-gray-500">{email || '—'}</div>
@@ -117,7 +117,7 @@ export default function Settings() {
             <div className="bg-purple-100 rounded-full p-2 mr-4">
               <HouseIcon className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="flex-1 font-semibold text-lg">Мой дом</div>
+            <div className="flex-1 font-semibold text-lg">{household?.name ?? '—'}</div>
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>
         </div>
@@ -138,12 +138,10 @@ export default function Settings() {
 /* ---------- Вспомогательные компоненты ---------- */
 
 function Avatar({ name, src, size = 64 }: { name: string; src?: string | null; size?: number }) {
-  const initials = (name || '🙂')
-    .trim()
-    .split(/\s+/)
-    .map(w => w[0]?.toUpperCase())
-    .slice(0, 2)
-    .join('')
+  const base = (name ?? '').trim()
+  const initials = base
+    ? base.split(/\s+/).map(w => w.charAt(0)).slice(0, 2).join('').toUpperCase()
+    : ''
 
   if (src) {
     return (

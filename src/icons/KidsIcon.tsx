@@ -2,11 +2,9 @@ import React from 'react'
 
 export default function KidsIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="7" r="3"/>
-      <circle cx="16" cy="7" r="3"/>
-      <path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0"/>
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor" aria-hidden="true">
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path d="M18 9h-6V4H8C5.79 4 4 5.79 4 8v6c0 1.1.9 2 2 2h2v2.93c-.61-.35-1.16-.78-1.65-1.27l-1.42 1.42C6.74 20.88 9.24 22 12 22c2.76 0 5.26-1.12 7.07-2.93l-1.42-1.42c-.49.49-1.05.92-1.65 1.27V16h2c1.1 0 2-.9 2-2v-3c0-1.1-.9-2-2-2zm-4 10.75c-.64.16-1.31.25-2 .25s-1.36-.09-2-.25V16h4v3.75z"></path>
     </svg>
   )
 }
-

@@ -11,20 +11,41 @@ import DeskIcon from '../icons/DeskIcon'
 import KidsIcon from '../icons/KidsIcon'
 import WardrobeIcon from '../icons/WardrobeIcon'
 import BalconyIcon from '../icons/BalconyIcon'
-import TVIcon from '../icons/TVIcon'
+import ChairIcon from '../icons/ChairIcon'
+import ToiletIcon from '../icons/ToiletIcon'
+import ShowerIcon from '../icons/ShowerIcon'
+import SinkIcon from '../icons/SinkIcon'
+import MixerIcon from '../icons/MixerIcon'
+import CookingIcon from '../icons/CookingIcon'
+import FridgeIcon from '../icons/FridgeIcon'
+import FootprintIcon from '../icons/FootprintIcon'
+import HangerIcon from '../icons/HangerIcon'
+import CutleryIcon from '../icons/CutleryIcon'
+import UnknownIcon from '../icons/UnknownIcon'
 
 type Option = { id: string; label: string; Icon: React.ComponentType<{ className?: string }> }
 
 const OPTIONS: Option[] = [
   { id: 'bed', label: 'Спальня', Icon: BedIcon },
-  { id: 'bath', label: 'Ванная', Icon: BathIcon },
-  { id: 'kitchen', label: 'Кухня', Icon: KitchenIcon },
   { id: 'living', label: 'Гостиная', Icon: SofaIcon },
-  { id: 'office', label: 'Кабинет', Icon: DeskIcon },
+  { id: 'chair', label: 'Столовая', Icon: ChairIcon },
   { id: 'kids', label: 'Детская', Icon: KidsIcon },
-  { id: 'wardrobe', label: 'Гардероб', Icon: WardrobeIcon },
-  { id: 'balcony', label: 'Балкон', Icon: BalconyIcon },
-  { id: 'tv', label: 'Кино', Icon: TVIcon },
+  
+  { id: 'bath', label: 'Ванная', Icon: BathIcon },
+  { id: 'toilet', label: 'Туалет', Icon: ToiletIcon },
+  { id: 'shower', label: 'Душ', Icon: ShowerIcon },
+  { id: 'sink', label: 'Санузел', Icon: SinkIcon },
+
+  { id: 'mixer', label: 'Миксер', Icon: MixerIcon },
+  { id: 'cooking', label: 'Готовка', Icon: CookingIcon },
+  { id: 'fridge', label: 'Холодильник', Icon: FridgeIcon },
+  { id: 'kitchen', label: 'Кухня', Icon: KitchenIcon },
+  
+  { id: 'footprint', label: 'Следы', Icon: FootprintIcon },
+  { id: 'hanger', label: 'Вешалка', Icon: HangerIcon },
+  { id: 'cutlery', label: 'Приборы', Icon: CutleryIcon },
+  { id: 'unknown', label: 'Неизвестно', Icon: UnknownIcon },
+  
 ]
 
 export default function ChooseRoomIcon() {
@@ -53,7 +74,7 @@ export default function ChooseRoomIcon() {
         <div className="w-full max-w-sm flex flex-col items-center mt-20">
           <h1 className="text-3xl font-extrabold text-center text-black mb-6">Иконка комнаты</h1>
 
-          <div className="grid grid-cols-3 gap-4 w-full mb-8">
+          <div className="grid grid-cols-4 gap-4 w-full mb-8">
             {OPTIONS.map(({ id, label, Icon }) => {
               const active = id === selected
               return (

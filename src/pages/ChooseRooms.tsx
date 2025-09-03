@@ -16,7 +16,22 @@ import DeskIcon from '../icons/DeskIcon'
 import KidsIcon from '../icons/KidsIcon'
 import WardrobeIcon from '../icons/WardrobeIcon'
 import BalconyIcon from '../icons/BalconyIcon'
-import TVIcon from '../icons/TVIcon'
+import ChairIcon from '../icons/ChairIcon'
+import WindowIcon from '../icons/WindowIcon'
+import CutleryIcon from '../icons/CutleryIcon'
+import HangerIcon from '../icons/HangerIcon'
+import IronIcon from '../icons/IronIcon'
+import SoapIcon from '../icons/SoapIcon'
+import BucketIcon from '../icons/BucketIcon'
+import PetIcon from '../icons/PetIcon'
+import ShowerIcon from '../icons/ShowerIcon'
+import SinkIcon from '../icons/SinkIcon'
+import MixerIcon from '../icons/MixerIcon'
+import CookingIcon from '../icons/CookingIcon'
+import FridgeIcon from '../icons/FridgeIcon'
+import FootprintIcon from '../icons/FootprintIcon'
+import TrashIcon from '../icons/TrashIcon'
+import UnknownIcon from '../icons/UnknownIcon'
 import { supabase } from '../lib/supabase'
 import type { AppOutletCtx } from '../AppLayout'
 
@@ -100,11 +115,27 @@ export default function ChooseRooms() {
                 {(() => {
                   const IconMap: Record<string, ComponentType<{className?:string}>> = {
                     broom: BroomIcon,
+                    vacuum: BroomIcon,
                     mop: MopIcon,
+                    window: WindowIcon,
+                    cutlery: CutleryIcon,
                     dishes: DishesIcon,
                     dust: FeatherIcon,
                     laundry: TShirtIcon,
+                    washmachine: TShirtIcon,
+                    hanger: HangerIcon,
+                    iron: IronIcon,
+                    soap: SoapIcon,
+                    bucket: BucketIcon,
+                    pet: PetIcon,
+                    kids: KidsIcon,
                     plumbing: ToiletIcon,
+                    bath: BathIcon,
+                    toilet: ToiletIcon,
+                    shower: ShowerIcon,
+                    sink: SinkIcon,
+                    trash: TrashIcon,
+                    unknown: UnknownIcon,
                   }
                   const Ico = iconId ? IconMap[iconId] : undefined
                   return Ico ? <Ico className="w-8 h-8 text-[#7900FD]"/> : <span className="text-[#7900FD] text-xl">★</span>
@@ -128,7 +159,17 @@ export default function ChooseRooms() {
                   kids: KidsIcon,
                   wardrobe: WardrobeIcon,
                   balcony: BalconyIcon,
-                  tv: TVIcon,
+                  tv: ChairIcon,
+                  chair: ChairIcon,
+                  toilet: ToiletIcon,
+                  shower: ShowerIcon,
+                  sink: SinkIcon,
+                  mixer: MixerIcon,
+                  cooking: CookingIcon,
+                  fridge: FridgeIcon,
+                  footprint: FootprintIcon,
+                  hanger: HangerIcon,
+                  cutlery: CutleryIcon,
                 }
                 const RIco = r.icon_id ? RoomIconMap[r.icon_id] : undefined
                 return (

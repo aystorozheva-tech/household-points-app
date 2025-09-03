@@ -11,7 +11,17 @@ import DeskIcon from '../icons/DeskIcon'
 import KidsIcon from '../icons/KidsIcon'
 import WardrobeIcon from '../icons/WardrobeIcon'
 import BalconyIcon from '../icons/BalconyIcon'
-import TVIcon from '../icons/TVIcon'
+import ChairIcon from '../icons/ChairIcon'
+import ToiletIcon from '../icons/ToiletIcon'
+import ShowerIcon from '../icons/ShowerIcon'
+import SinkIcon from '../icons/SinkIcon'
+import MixerIcon from '../icons/MixerIcon'
+import CookingIcon from '../icons/CookingIcon'
+import FridgeIcon from '../icons/FridgeIcon'
+import FootprintIcon from '../icons/FootprintIcon'
+import HangerIcon from '../icons/HangerIcon'
+import CutleryIcon from '../icons/CutleryIcon'
+import UnknownIcon from '../icons/UnknownIcon'
 import ChevronRightIcon from '../icons/ChevronRightIcon'
 
 export default function ConfigRooms() {
@@ -45,7 +55,18 @@ export default function ConfigRooms() {
     kids: KidsIcon,
     wardrobe: WardrobeIcon,
     balcony: BalconyIcon,
-    tv: TVIcon,
+    tv: ChairIcon,
+    chair: ChairIcon,
+    toilet: ToiletIcon,
+    shower: ShowerIcon,
+    sink: SinkIcon,
+    mixer: MixerIcon,
+    cooking: CookingIcon,
+    fridge: FridgeIcon,
+    footprint: FootprintIcon,
+    hanger: HangerIcon,
+    cutlery: CutleryIcon,
+    unknown: UnknownIcon,
   } as const), [])
 
   return (

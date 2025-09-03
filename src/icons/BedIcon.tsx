@@ -2,12 +2,9 @@ import React from 'react'
 
 export default function BedIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 7v10M21 17V9a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3"/>
-      <path d="M3 14h18"/>
-      <rect x="6" y="10" width="5" height="3" rx="1"/>
-      <rect x="12.5" y="10" width="5.5" height="3" rx="1"/>
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M0 0h24v24H0V0z" fill="none"></path>
+      <path d="M21 10.78V8c0-1.65-1.35-3-3-3h-4c-.77 0-1.47.3-2 .78-.53-.48-1.23-.78-2-.78H6C4.35 5 3 6.35 3 8v2.78c-.61.55-1 1.34-1 2.22v6h2v-2h16v2h2v-6c0-.88-.39-1.67-1-2.22zM14 7h4c.55 0 1 .45 1 1v2h-6V8c0-.55.45-1 1-1zM5 8c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v2H5V8zm-1 7v-2c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v2H4z"></path>
     </svg>
   )
 }
-

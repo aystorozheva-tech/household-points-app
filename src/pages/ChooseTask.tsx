@@ -10,6 +10,19 @@ import DishesIcon from '../icons/DishesIcon'
 import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
+import VacuumIcon from '../icons/VacuumIcon'
+import WindowIcon from '../icons/WindowIcon'
+import CutleryIcon from '../icons/CutleryIcon'
+import BathIcon from '../icons/BathIcon'
+import ShowerIcon from '../icons/ShowerIcon'
+import SinkIcon from '../icons/SinkIcon'
+import WashmachineIcon from '../icons/WashmachineIcon'
+import HanderTwoIcon from '../icons/HanderTwoIcon'
+import IronIcon from '../icons/IronIcon'
+import SoapIcon from '../icons/SoapIcon'
+import BucketIcon from '../icons/BucketIcon'
+import PetIcon from '../icons/PetIcon'
+import KidsIcon from '../icons/KidsIcon'
 
 type Chore = { id: string; name_ru: string; base_points_cnt: number; settings_per_room_flg: boolean; icon_id: string | null }
 
@@ -97,11 +110,25 @@ export default function ChooseTask() {
 
   const IconMap: Record<string, ComponentType<{className?:string}>> = {
     broom: BroomIcon,
+    vacuum: VacuumIcon,
     mop: MopIcon,
+    window: WindowIcon,
+    cutlery: CutleryIcon,
     dishes: DishesIcon,
     dust: FeatherIcon,
     laundry: TShirtIcon,
+    washmachine: WashmachineIcon,
+    hanger: HanderTwoIcon,
+    iron: IronIcon,
+    soap: SoapIcon,
+    bucket: BucketIcon,
+    pet: PetIcon,
+    kids: KidsIcon,
     plumbing: ToiletIcon,
+    bath: BathIcon,
+    toilet: ToiletIcon,
+    shower: ShowerIcon,
+    sink: SinkIcon,
   }
 
   return (

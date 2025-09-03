@@ -2,12 +2,9 @@ import React from 'react'
 
 export default function KitchenIcon({ className = 'w-8 h-8' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="7" rx="1"/>
-      <rect x="5" y="14" width="6" height="7" rx="1"/>
-      <rect x="13" y="10" width="6" height="11" rx="1"/>
-      <path d="M7 6h.01M11 6h.01M15 6h.01M19 6h.01"/>
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor" aria-hidden="true">
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path d="M18 10V7c0-1.66-1.34-3-3-3s-3 1.34-3 3h2c0-.55.45-1 1-1s1 .45 1 1v3H8c1.1 0 2-.9 2-2V4H4v4c0 1.1.9 2 2 2H2v2h2v8h16v-8h2v-2h-4zm-5 8h-2v-6h2v6z"></path>
     </svg>
   )
 }
-

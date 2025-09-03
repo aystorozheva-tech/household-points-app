@@ -41,7 +41,7 @@ export default function ConfigMembers() {
         <div className="px-4 space-y-4">
           {members.map((m, i) => (
             <div key={i} className="flex items-center bg-white rounded-xl shadow p-4">
-              <Avatar name={m.display_name ?? ''} src={m.avatar_url} size={48} />
+              <Avatar name={(m.display_name || m.email || '')} src={m.avatar_url} size={48} />
               <div className="flex-1 ml-4">
                 <div className="font-semibold text-lg">{m.display_name ?? '—'}</div>
                 <div className="text-sm text-gray-500">{m.email ?? '—'}</div>
@@ -67,12 +67,10 @@ export default function ConfigMembers() {
 }
 
 function Avatar({ name, src, size = 64 }: { name: string; src?: string | null; size?: number }) {
-  const initials = (name || '🙂')
-    .trim()
-    .split(/\s+/)
-    .map(w => w[0]?.toUpperCase())
-    .slice(0, 2)
-    .join('')
+  const base = (name ?? '').trim()
+  const initials = base
+    ? base.split(/\s+/).map(w => w.charAt(0)).slice(0, 2).join('').toUpperCase()
+    : ''
   if (src) {
     return (
       <img

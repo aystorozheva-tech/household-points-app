@@ -9,17 +9,44 @@ import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
 import TrashIcon from '../icons/TrashIcon'
+import VacuumIcon from '../icons/VacuumIcon'
+import WindowIcon from '../icons/WindowIcon'
+import CutleryIcon from '../icons/CutleryIcon'
+import BathIcon from '../icons/BathIcon'
+import ShowerIcon from '../icons/ShowerIcon'
+import SinkIcon from '../icons/SinkIcon'
+import WashmachineIcon from '../icons/WashmachineIcon'
+import HanderTwoIcon from '../icons/HanderTwoIcon'
+import IronIcon from '../icons/IronIcon'
+import SoapIcon from '../icons/SoapIcon'
+import BucketIcon from '../icons/BucketIcon'
+import PetIcon from '../icons/PetIcon'
+import KidsIcon from '../icons/KidsIcon'
+import UnknownIcon from '../icons/UnknownIcon'
 
 type Option = { id: string; label: string; Icon: React.ComponentType<{ className?: string }> }
 
 const OPTIONS: Option[] = [
-  { id: 'broom', label: 'Пылесос/Подметание', Icon: BroomIcon },
-  { id: 'mop', label: 'Мытьё пола', Icon: MopIcon },
-  { id: 'dishes', label: 'Посудa', Icon: DishesIcon },
-  { id: 'dust', label: 'Пыль', Icon: FeatherIcon },
-  { id: 'laundry', label: 'Стирка', Icon: TShirtIcon },
-  { id: 'plumbing', label: 'Санузел', Icon: ToiletIcon },
-  { id: 'trash', label: 'Мусор', Icon: TrashIcon },
+  { id: 'vacuum', label: 'Пылесос', Icon: VacuumIcon },
+  { id: 'mop', label: 'Мытьё пола', Icon: MopIcon },  
+  { id: 'window', label: 'Окно', Icon: WindowIcon },  
+  { id: 'cutlery', label: 'Посуда', Icon: CutleryIcon },  
+
+  { id: 'bath', label: 'Ванная', Icon: BathIcon },
+  { id: 'toilet', label: 'Туалет', Icon: ToiletIcon },
+  { id: 'shower', label: 'Душ', Icon: ShowerIcon },
+  { id: 'sink', label: 'Санузел', Icon: SinkIcon },
+  
+  { id: 'washmachine', label: 'Стирка', Icon: WashmachineIcon },
+  { id: 'hanger', label: 'Вешалка', Icon: HanderTwoIcon },
+  { id: 'iron', label: 'Утюг', Icon: IronIcon },
+  { id: 'soap', label: 'Мыло', Icon: SoapIcon },
+
+  { id: 'bucket', label: 'Ведро', Icon: BucketIcon },
+  { id: 'pet', label: 'Домашние животные', Icon: PetIcon },
+  { id: 'kids', label: 'Дети', Icon: KidsIcon },
+  { id: 'unknown', label: 'Неизвестно', Icon: UnknownIcon },
+  
 ]
 
 export default function ChooseChoreIcon() {
@@ -47,7 +74,7 @@ export default function ChooseChoreIcon() {
         <div className="w-full max-w-sm flex flex-col items-center mt-20">
           <h1 className="text-3xl font-extrabold text-center text-black mb-6">Иконка дела</h1>
 
-          <div className="grid grid-cols-3 gap-4 w-full mb-8">
+          <div className="grid grid-cols-4 gap-4 w-full mb-8">
             {OPTIONS.map(({ id, label, Icon }) => {
               const active = id === selected
               return (
