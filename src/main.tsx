@@ -36,6 +36,7 @@ import ConfigMembers from './pages/ConfigMembers'
 import InviteScreen from './pages/InviteScreen'
 import ChooseChoreIcon from './pages/ChooseChoreIcon'
 import ChooseRooms from './pages/ChooseRooms'
+import EditEntry from './pages/EditEntry'
 
 // AUTH pages (вне AppLayout!)
 import Welcome from './pages/auth/Welcome'
@@ -97,6 +98,7 @@ const router = createHashRouter([
       { path: 'punish', element: <PunishSelect /> },
       { path: 'choose-rooms/:id', element: <ChooseRooms /> },
       { path: 'history', element: <History /> },
+      { path: 'edit-entry/:id', element: <EditEntry /> },
       { path: 'results', element: <Results /> },
       { path: 'settings', element: <Settings /> },
       { path: 'profile', element: <Profile /> },

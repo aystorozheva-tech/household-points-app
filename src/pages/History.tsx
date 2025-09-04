@@ -46,7 +46,7 @@ export default function History() {
       {error && <div className="text-center text-red-600 py-2 text-sm">{error}</div>}
       <div className="space-y-3">
         {items.map(e => (
-          <div key={e.id} className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-md">
+          <button key={e.id} onClick={() => (window.location.hash = `#/edit-entry/${e.id}`)} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white shadow-md text-left hover:shadow-lg active:scale-[0.99] transition">
             {(() => {
               const prof = Array.isArray(e.profile) ? e.profile[0] : e.profile
               return <Avatar url={prof?.avatar_url || undefined} name={(prof?.display_name || prof?.email || '') as string} />
@@ -60,7 +60,7 @@ export default function History() {
               </div>
               <div className="text-xs text-slate-500">{new Date(e.created_at).toLocaleString('ru-RU')}</div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </Layout>
