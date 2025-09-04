@@ -12,6 +12,8 @@ export default defineConfig({
         name: 'Хлопоты',
         short_name: 'Хлопоты',
         description: 'Домашние хлопоты и мотивация',
+        start_url: '/',
+        scope: '/',
         theme_color: '#7900FD',
         background_color: '#FFFFFF',
         display: 'standalone',
