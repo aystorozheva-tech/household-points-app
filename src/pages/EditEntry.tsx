@@ -33,6 +33,7 @@ export default function EditEntry() {
   const [profileId, setProfileId] = useState<string>('')
   const [profiles, setProfiles] = useState<Array<{id:string; display_name: string; email: string|null}>>([])
   const [authorOpen, setAuthorOpen] = useState(false)
+  const [meProfileId, setMeProfileId] = useState<string>('')
 
   useEffect(() => {
     let mounted = true
@@ -63,6 +64,21 @@ export default function EditEntry() {
         .eq('household_id', householdId);
       const profs = profsRes.data
       setProfiles((profs ?? []).map(p => ({ id: (p as any).id, display_name: (p as any).display_name, email: (p as any).email })))
+
+      // determine current user's profile id (actor) in this household
+      try {
+        const { data: u } = await supabase.auth.getUser()
+        const uid = u.user?.id
+        if (uid) {
+          const { data: me } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('household_id', householdId)
+            .eq('user_id', uid)
+            .maybeSingle()
+          if (me?.id) setMeProfileId(me.id)
+        }
+      } catch {}
       setLoading(false)
     })()
     return () => { mounted = false }
@@ -86,7 +102,7 @@ export default function EditEntry() {
     setSaving(false)
     if (error || !data) { setError(error?.message || 'Не удалось сохранить'); return }
     // Notify edit
-    notifyEvent({ householdId, actorProfileId: profileId, type: 'entry_edited', entity: { id, kind, title } as any })
+    notifyEvent({ householdId, actorProfileId: meProfileId || profileId, type: 'entry_edited', entity: { id, kind, title } as any })
     navigate('/history')
   }
 
@@ -101,7 +117,7 @@ export default function EditEntry() {
       .eq('household_id', householdId)
     setDeleting(false)
     if (error) { setError(error.message); return }
-    notifyEvent({ householdId, actorProfileId: profileId, type: 'entry_deleted', entity: { id: id!, title, kind } as any })
+    notifyEvent({ householdId, actorProfileId: meProfileId || profileId, type: 'entry_deleted', entity: { id: id!, title, kind } as any })
     navigate('/history')
   }
 
