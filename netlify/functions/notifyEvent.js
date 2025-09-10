@@ -1,0 +1,96 @@
+const { createClient } = require('@supabase/supabase-js')
+const webpush = require('web-push')
+
+const subject = process.env.VAPID_SUBJECT || 'mailto:support@example.com'
+webpush.setVapidDetails(subject, process.env.VAPID_PUBLIC_KEY || '', process.env.VAPID_PRIVATE_KEY || '')
+
+exports.handler = async (event) => {
+  try {
+    if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' }
+
+    // Optional: protect with token
+    // if (event.headers['x-function-token'] !== process.env.NETLIFY_FUNCTION_TOKEN) return { statusCode: 401, body: 'Unauthorized' }
+
+    const body = JSON.parse(event.body || '{}')
+    const { householdId, actorProfileId, type, entity } = body || {}
+    if (!householdId || !actorProfileId || !type || !entity) {
+      return { statusCode: 400, body: 'Invalid payload' }
+    }
+
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE, { auth: { persistSession: false } })
+
+    const { data: actor } = await supabase.from('profiles').select('id, display_name').eq('id', actorProfileId).maybeSingle()
+    const actorName = (actor && actor.display_name) || 'Пользователь'
+
+    const { data: recipients, error: recErr } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('household_id', householdId)
+      .neq('id', actorProfileId)
+    if (recErr) return { statusCode: 500, body: recErr.message }
+    const profileIds = (recipients || []).map((r) => r.id)
+    if (profileIds.length === 0) return { statusCode: 200, body: 'No recipients' }
+
+    function entryMsg(kind, title, points, editedAction) {
+      if (editedAction === 'edited') return `${actorName} отредактировал(-а): ${title}`
+      if (editedAction === 'deleted') return `${actorName} удалил(-а): ${title}`
+      if (kind === 'task') return `${actorName} похлопотал(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      if (kind === 'reward') return `${actorName} наградил(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      if (kind === 'penalty') return `${actorName} наказан(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      return `${actorName}: ${title}`
+    }
+
+    function choreMsg(title) { return `${actorName} отредактировал(-а): ${title}` }
+    function penaltyMsg(title) { return `${actorName} отредактировал(-а): ${title}` }
+
+    let notifTitle = 'Хлопоты'
+    let bodyText = ''
+    let url = '/#/history'
+    switch (type) {
+      case 'entry_created':
+        bodyText = entryMsg(entity.kind, entity.title, entity.points)
+        url = '/#/history'
+        break
+      case 'entry_edited':
+        bodyText = entryMsg(entity.kind, entity.title, entity.points, 'edited')
+        url = `/#/edit-entry/${entity.id}`
+        break
+      case 'entry_deleted':
+        bodyText = entryMsg(entity.kind, entity.title, entity.points, 'deleted')
+        url = `/#/edit-entry/${entity.id}`
+        break
+      case 'chore_edited':
+        bodyText = choreMsg(entity.title)
+        url = `/#/config/tasks/${entity.id}`
+        break
+      case 'penalty_edited':
+        bodyText = penaltyMsg(entity.title)
+        url = `/#/config/punishments/${entity.id}`
+        break
+      default:
+        bodyText = 'Новое уведомление'
+    }
+
+    const { data: subs, error } = await supabase
+      .from('push_subscriptions')
+      .select('endpoint, p256dh, auth')
+      .in('profile_id', profileIds)
+    if (error) return { statusCode: 500, body: error.message }
+
+    let sent = 0
+    for (const s of subs || []) {
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify({ title: notifTitle, body: bodyText, data: { url } }))
+        sent++
+      } catch (e) {
+        if (e?.statusCode === 404 || e?.statusCode === 410) {
+          await supabase.from('push_subscriptions').delete().eq('endpoint', s.endpoint)
+        }
+      }
+    }
+    return { statusCode: 200, body: JSON.stringify({ sent }) }
+  } catch (e) {
+    return { statusCode: 500, body: e?.message || 'Internal error' }
+  }
+}
+

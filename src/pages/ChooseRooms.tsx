@@ -34,6 +34,7 @@ import TrashIcon from '../icons/TrashIcon'
 import UnknownIcon from '../icons/UnknownIcon'
 import { supabase } from '../lib/supabase'
 import type { AppOutletCtx } from '../AppLayout'
+import { notifyEvent } from '../lib/notify'
 
 type Room = { id: string; name_ru: string; icon_id: string | null }
 
@@ -87,7 +88,7 @@ export default function ChooseRooms() {
   async function confirm() {
     if (!meId || !chore) return
     if (total <= 0) { navigate('/'); return }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('entries')
       .insert({
         household_id: householdId,
@@ -99,6 +100,9 @@ export default function ChooseRooms() {
       .select('id')
       .single()
     if (error) { setError(error.message); return }
+    if (data?.id) {
+      notifyEvent({ householdId, actorProfileId: meId, type: 'entry_created', entity: { id: data.id as string, kind: 'task', title: chore.name_ru, points: total } })
+    }
     navigate('/')
   }
 

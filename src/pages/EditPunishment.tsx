@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { notifyEvent } from '../lib/notify'
 
 export default function EditPunishment() {
   const { id } = useParams()
@@ -43,6 +44,14 @@ export default function EditPunishment() {
       .eq('id', id)
     setSaving(false)
     if (error) { setError(error.message); return }
+    try {
+      const { data: u } = await supabase.auth.getUser()
+      const uid = u.user?.id
+      if (uid) {
+        const { data: prof } = await supabase.from('profiles').select('id,household_id').eq('user_id', uid).order('created_at', { ascending: false }).limit(1).maybeSingle()
+        if (prof?.id && prof?.household_id) notifyEvent({ householdId: prof.household_id as string, actorProfileId: prof.id as string, type: 'penalty_edited', entity: { id: id!, title } as any })
+      }
+    } catch {}
     navigate('/config/punishments')
   }
 

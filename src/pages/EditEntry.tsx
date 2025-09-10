@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { notifyEvent } from '../lib/notify'
 import ChevronRightIcon from '../icons/ChevronRightIcon'
 import type { AppOutletCtx } from '../AppLayout'
 
@@ -84,6 +85,8 @@ export default function EditEntry() {
       .single()
     setSaving(false)
     if (error || !data) { setError(error?.message || 'Не удалось сохранить'); return }
+    // Notify edit
+    notifyEvent({ householdId, actorProfileId: profileId, type: 'entry_edited', entity: { id, kind, title } as any })
     navigate('/history')
   }
 
@@ -98,6 +101,7 @@ export default function EditEntry() {
       .eq('household_id', householdId)
     setDeleting(false)
     if (error) { setError(error.message); return }
+    notifyEvent({ householdId, actorProfileId: profileId, type: 'entry_deleted', entity: { id: id!, title, kind } as any })
     navigate('/history')
   }
 

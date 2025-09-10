@@ -3,6 +3,7 @@ import Layout from '../components/Layout'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { AppOutletCtx } from '../AppLayout'
+import { notifyEvent } from '../lib/notify'
 import BrokenHeartIcon from '../icons/BrokenHeartIcon'
 
 function SelectableRow({
@@ -89,7 +90,7 @@ export default function PunishSelect() {
   async function applyFine(f: {id:string;name_ru:string;points_cnt:number}) {
     if (!partnerId) return
     setError(null)
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('entries')
       .insert({
         household_id: householdId,
@@ -101,6 +102,10 @@ export default function PunishSelect() {
       .select('id')
       .single()
     if (error) { setError(error.message); return }
+    if (data?.id) {
+      // actor is meId here (giver), penalty is applied to partner
+      notifyEvent({ householdId, actorProfileId: meId!, type: 'entry_created', entity: { id: data.id as string, kind: 'penalty', title: f.name_ru, points: -Math.abs(f.points_cnt) } })
+    }
     navigate('/')
   }
 

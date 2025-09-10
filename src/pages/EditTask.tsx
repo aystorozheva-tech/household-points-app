@@ -3,6 +3,7 @@ import type React from 'react'
 import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { notifyEvent } from '../lib/notify'
 import type { AppOutletCtx } from '../AppLayout'
 import BroomIcon from '../icons/BroomIcon'
 import MopIcon from '../icons/MopIcon'
@@ -164,6 +165,15 @@ export default function EditTask() {
     setSaving(false)
     if (error) { setError(error.message); return }
     if (!data) { setError('Не удалось обновить: запись не найдена или нет доступа'); return }
+    // Find current user's profile id for this household and notify
+    try {
+      const { data: u } = await supabase.auth.getUser()
+      const uid = u.user?.id
+      if (uid) {
+        const { data: prof } = await supabase.from('profiles').select('id').eq('household_id', householdId).eq('user_id', uid).maybeSingle()
+        if (prof?.id) notifyEvent({ householdId, actorProfileId: prof.id, type: 'chore_edited', entity: { id: id!, title: name } as any })
+      }
+    } catch {}
     navigate('/config/tasks')
   }
 

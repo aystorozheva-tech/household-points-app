@@ -3,6 +3,7 @@ import Layout from '../components/Layout'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { AppOutletCtx } from '../AppLayout'
+import { notifyEvent } from '../lib/notify'
 import ChevronRightIcon from '../icons/ChevronRightIcon'
 import BroomIcon from '../icons/BroomIcon'
 import MopIcon from '../icons/MopIcon'
@@ -90,7 +91,7 @@ export default function ChooseTask() {
   async function addSimple(chore: Chore) {
     if (!meId) return
     setError(null)
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('entries')
       .insert({
         household_id: householdId,
@@ -102,6 +103,14 @@ export default function ChooseTask() {
       .select('id')
       .single()
     if (error) { setError(error.message); return }
+    if (data?.id) {
+      notifyEvent({
+        householdId,
+        actorProfileId: meId,
+        type: 'entry_created',
+        entity: { id: data.id as string, kind: 'task', title: chore.name_ru, points: chore.base_points_cnt }
+      })
+    }
     navigate('/')
   }
 

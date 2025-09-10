@@ -3,6 +3,7 @@ import Layout from '../components/Layout'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { AppOutletCtx } from '../AppLayout'
+import { notifyEvent } from '../lib/notify'
 import HeartIcon from '../icons/HeartIcon'
 
 function SelectableRow({
@@ -89,7 +90,7 @@ export default function RewardSelect() {
   async function giveReward(r: {id:string;name_ru:string;points_cnt:number}) {
     if (!meId) return
     setError(null)
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('entries')
       .insert({
         household_id: householdId,
@@ -101,6 +102,9 @@ export default function RewardSelect() {
       .select('id')
       .single()
     if (error) { setError(error.message); return }
+    if (data?.id) {
+      notifyEvent({ householdId, actorProfileId: meId, type: 'entry_created', entity: { id: data.id as string, kind: 'reward', title: r.name_ru, points: r.points_cnt } })
+    }
     navigate('/')
   }
 
