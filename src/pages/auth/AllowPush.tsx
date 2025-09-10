@@ -1,10 +1,22 @@
 import { useNavigate } from 'react-router-dom'
+import { registerForPush } from '../../lib/push'
+import { supabase } from '../../lib/supabase'
 
 export default function AllowPush() {
   const navigate = useNavigate()
-
-  function handleEnablePush() {
-    // TODO: enable push notifications
+  async function handleEnablePush() {
+    try {
+      const { data: u } = await supabase.auth.getUser()
+      const uid = u.user?.id
+      let pid = ''
+      if (uid) {
+        const { data: profs } = await supabase.from('profiles').select('id, created_at').eq('user_id', uid).order('created_at', { ascending: false }).limit(1)
+        pid = (profs && profs[0]?.id) || ''
+      }
+      await registerForPush(pid)
+    } catch (e) {
+      console.error('Push registration failed', e)
+    }
     navigate('/auth/sign-up-complete')
   }
 

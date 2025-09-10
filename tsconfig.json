@@ -13,5 +13,8 @@
     "noEmit": true,
     "esModuleInterop": true,
     "verbatimModuleSyntax": true
-  }
+  },
+  "exclude": [
+    "netlify"
+  ]
 }
