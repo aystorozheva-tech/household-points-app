@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import type { AppOutletCtx } from '../AppLayout'
-import { registerForPush, unregisterFromPush } from '../lib/push'
+// push toggle moved to ProfileSettings
 
 type Profile = {
   id: string
@@ -30,8 +30,6 @@ export default function Settings() {
   const [email, setEmail] = useState<string>('')
   const [profile, setProfile] = useState<Profile | null>(null)
   const [household, setHousehold] = useState<Household | null>(null)
-  const [pushChecking, setPushChecking] = useState(true)
-  const [pushEnabled, setPushEnabled] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -76,20 +74,7 @@ export default function Settings() {
     return () => { mounted = false }
   }, [householdId])
 
-  useEffect(() => {
-    // Check existing subscription
-    let mounted = true
-    ;(async () => {
-      try {
-        if (!('serviceWorker' in navigator)) { setPushEnabled(false); setPushChecking(false); return }
-        const reg = await navigator.serviceWorker.ready
-        const sub = await reg.pushManager.getSubscription()
-        if (mounted) setPushEnabled(!!sub)
-      } catch { /* ignore */ }
-      if (mounted) setPushChecking(false)
-    })()
-    return () => { mounted = false }
-  }, [])
+  
 
   async function handleSignOut() {
     try {
@@ -122,7 +107,7 @@ export default function Settings() {
         <h1 className="text-center text-2xl font-bold mt-8 mb-6">Настройки</h1>
         <div className="px-4 space-y-4">
           {/* Profile Card */}
-          <div className="flex items-center bg-white rounded-xl shadow p-4 mb-2 cursor-pointer" onClick={() => navigate('/profile')}>
+          <div className="flex items-center bg-white rounded-xl shadow p-4 mb-2 cursor-pointer" onClick={() => navigate('/profile-settings')}>
             <Avatar name={(profile?.display_name || email || '')} src={profile?.avatar_url} size={48} />
             <div className="flex-1 ml-4">
               <div className="font-semibold text-lg">{profile?.display_name ?? '—'}</div>
@@ -139,31 +124,7 @@ export default function Settings() {
             <span className="ml-2 text-gray-400">&gt;</span>
           </div>
 
-          {/* Push Notifications */}
-          <div className="flex items-center bg-white rounded-xl shadow p-4">
-            <div className="bg-purple-100 rounded-full p-2 mr-4">
-              <svg viewBox="0 0 24 24" className="w-6 h-6 text-purple-500" fill="currentColor"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Zm6-6V10a6 6 0 1 0-12 0v6l-2 2v1h16v-1l-2-2Z"/></svg>
-            </div>
-            <div className="flex-1 font-semibold text-lg">Уведомления</div>
-            <button
-              disabled={pushChecking}
-              onClick={async () => {
-                if (!pushEnabled) {
-                  try {
-                    // Use the loaded profile for this household
-                    if (!profile?.id) throw new Error('Нет профиля')
-                    await registerForPush(profile.id)
-                    setPushEnabled(true)
-                  } catch (e) { console.error(e) }
-                } else {
-                  try { await unregisterFromPush(); setPushEnabled(false) } catch (e) { console.error(e) }
-                }
-              }}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${pushEnabled ? 'bg-purple-600' : 'bg-slate-300'}`}
-            >
-              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${pushEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
-            </button>
-          </div>
+          {/* Уведомления перенесены на экран профиля */}
         </div>
         {/* Logout Button */}
         <div className="px-4 mt-8">

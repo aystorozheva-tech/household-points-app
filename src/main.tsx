@@ -16,6 +16,7 @@ import History from './pages/History'
 import Results from './pages/Results'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
+import ProfileSettings from './pages/ProfileSettings'
 import ConfigRooms from './pages/ConfigRooms'
 import NewRoom from './pages/NewRoom'
 import ChooseRoomIcon from './pages/ChooseRoomIcon'
@@ -102,6 +103,7 @@ const router = createHashRouter([
       { path: 'results', element: <Results /> },
       { path: 'settings', element: <Settings /> },
       { path: 'profile', element: <Profile /> },
+      { path: 'profile-settings', element: <ProfileSettings /> },
       { path: 'config/flat', element: <ConfigRooms /> },
       { path: 'new-room', element: <NewRoom /> },
       { path: 'choose-room-icon', element: <ChooseRoomIcon /> },
