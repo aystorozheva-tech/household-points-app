@@ -112,33 +112,17 @@ export default function EditRoom() {
     setError(null)
     setDeleting(true)
     try {
-      // 1) Clean up chores.coefficient_dict that reference this room
-      const { data: chores, error: choresErr } = await supabase
-        .from('chores')
-        .select('id, coefficient_dict')
-        .eq('household_id', householdId)
-      if (choresErr) throw choresErr
-
-      const toUpdate = (chores || []).filter(c => c.coefficient_dict && typeof c.coefficient_dict === 'object' && Object.prototype.hasOwnProperty.call(c.coefficient_dict, id))
-      for (const ch of toUpdate as Array<{ id: string; coefficient_dict: Record<string, number> }>) {
-        const next = { ...(ch.coefficient_dict || {}) }
-        delete next[id]
-        const payload: any = { coefficient_dict: Object.keys(next).length > 0 ? next : null }
-        const { error: updErr } = await supabase
-          .from('chores')
-          .update(payload)
-          .eq('id', ch.id)
-          .eq('household_id', householdId)
-        if (updErr) throw updErr
+      const { data: sess } = await supabase.auth.getSession()
+      const jwt = sess.session?.access_token
+      const resp = await fetch('/.netlify/functions/deleteRoom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}) },
+        body: JSON.stringify({ householdId, roomId: id }),
+      })
+      if (!resp.ok) {
+        const text = await resp.text()
+        throw new Error(text || 'Delete failed')
       }
-
-      // 2) Delete the room itself
-      const { error } = await supabase
-        .from('rooms')
-        .delete()
-        .eq('id', id)
-        .eq('household_id', householdId)
-      if (error) throw error
     } catch (e: any) {
       setDeleting(false)
       setError(e?.message || 'Не удалось удалить комнату')
