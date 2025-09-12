@@ -348,15 +348,15 @@ function PlayerCard({
   return (
     <div
       className={`
-        bg-white rounded-3xl shadow-md p-4 flex flex-col items-center relative overflow-hidden
-        transition-transform ${isCurrent ? 'scale-[1.05]' : 'scale-[0.98]'} w-full
+        bg-white rounded-3xl shadow-md p-4 flex flex-col items-center relative overflow-hidden w-full
+        ${isCurrent ? 'ring-2 ring-[#7900FD]' : ''}
       `}
     >
       <div className="relative">
         {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="rounded-full object-cover" style={{width: isCurrent ? 80 : 64, height: isCurrent ? 80 : 64}} />
+          <img src={avatarUrl} alt={name} className="rounded-full object-cover" style={{ width: 80, height: 80 }} />
         ) : (
-          <InitialsAvatar name={name} size={isCurrent ? 80 : 64} />
+          <InitialsAvatar name={name} size={80} />
         )}
         {isLeader && (
           <CrownIcon className="absolute -top-6 right-6 w-8 h-8 text-yellow-400 drop-shadow" />

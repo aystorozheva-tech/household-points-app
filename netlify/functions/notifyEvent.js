@@ -98,7 +98,9 @@ exports.handler = async (event) => {
     let sent = 0
     for (const s of subs || []) {
       try {
-        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify({ title: notifTitle, body: bodyText, data: { url } }))
+        // For iOS: app name is already shown as source. Put message into title and keep body empty
+        const payload = { title: bodyText || notifTitle, body: '', data: { url } }
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload))
         sent++
       } catch (e) {
         if (e?.statusCode === 404 || e?.statusCode === 410) {
