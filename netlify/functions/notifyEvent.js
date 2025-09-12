@@ -51,16 +51,16 @@ exports.handler = async (event) => {
     if (profileIds.length === 0) return { statusCode: 200, body: 'No recipients' }
 
     function entryMsg(kind, title, points, editedAction, finedName) {
-      if (editedAction === 'edited') return `${appName} ${actorName} отредактировал(-а): ${title}`
-      if (editedAction === 'deleted') return `${appName} ${actorName} удалил(-а): ${title}`
-      if (kind === 'task') return `${appName} ${actorName} похлопотал(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
-      if (kind === 'reward') return `${appName} ${actorName} наградил(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
-      if (kind === 'penalty') return `${appName} ${finedName || actorName} наказан(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
-      return `${appName} ${actorName}: ${title}`
+      if (editedAction === 'edited') return `${actorName} отредактировал(-а): ${title}`
+      if (editedAction === 'deleted') return `${actorName} удалил(-а): ${title}`
+      if (kind === 'task') return `${actorName} похлопотал(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      if (kind === 'reward') return `${actorName} наградил(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      if (kind === 'penalty') return `${finedName || actorName} наказан(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      return `${actorName}: ${title}`
     }
 
-    function choreMsg(title) { return `${appName} ${actorName} отредактировала(-а): ${title}` }
-    function penaltyMsg(title) { return `${appName} ${actorName} отредактировала(-а): ${title}` }
+    function choreMsg(title) { return `${actorName} отредактировала(-а): ${title}` }
+    function penaltyMsg(title) { return `${actorName} отредактировала(-а): ${title}` }
 
     let notifTitle = appName
     let bodyText = ''
@@ -106,7 +106,7 @@ exports.handler = async (event) => {
         url = `/#/config/punishments/${entity.id}`
         break
       default:
-        bodyText = `${appName}: Новое уведомление`
+        bodyText = 'Новое уведомление'
     }
 
     const { data: subs, error } = await supabase
