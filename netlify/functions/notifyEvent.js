@@ -12,21 +12,39 @@ exports.handler = async (event) => {
     // if (event.headers['x-function-token'] !== process.env.NETLIFY_FUNCTION_TOKEN) return { statusCode: 401, body: 'Unauthorized' }
 
     const body = JSON.parse(event.body || '{}')
-    const { householdId, actorProfileId, type, entity } = body || {}
-    if (!householdId || !actorProfileId || !type || !entity) {
+    const { householdId, type, entity } = body || {}
+    if (!householdId || !type || !entity) {
       return { statusCode: 400, body: 'Invalid payload' }
     }
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE, { auth: { persistSession: false } })
 
-    const { data: actor } = await supabase.from('profiles').select('id, display_name').eq('id', actorProfileId).maybeSingle()
-    const actorName = (actor && actor.display_name) || 'Пользователь'
+    // Resolve actor from Authorization: Bearer <jwt>
+    const token = (event.headers.authorization || '').replace(/^Bearer\s+/i, '')
+    let actorProfileId = null
+    let actorName = 'Пользователь'
+    if (token) {
+      const { data: userData } = await supabase.auth.getUser(token)
+      const uid = userData?.user?.id
+      if (uid) {
+        const { data: actor } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .eq('household_id', householdId)
+          .eq('user_id', uid)
+          .maybeSingle()
+        if (actor?.id) {
+          actorProfileId = actor.id
+          actorName = actor.display_name || actorName
+        }
+      }
+    }
 
     const { data: recipients, error: recErr } = await supabase
       .from('profiles')
       .select('id')
       .eq('household_id', householdId)
-      .neq('id', actorProfileId)
+      .neq('id', actorProfileId || '00000000-0000-0000-0000-000000000000')
     if (recErr) return { statusCode: 500, body: recErr.message }
     const profileIds = (recipients || []).map((r) => r.id)
     if (profileIds.length === 0) return { statusCode: 200, body: 'No recipients' }
@@ -93,4 +111,3 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: e?.message || 'Internal error' }
   }
 }
-
