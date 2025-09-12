@@ -111,15 +111,13 @@ export default function EditRoom() {
     if (!id) return
     setError(null)
     setDeleting(true)
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('rooms')
       .delete()
       .eq('id', id)
-      .select('id')
-      .single()
+      .eq('household_id', householdId)
     setDeleting(false)
     if (error) { setError(error.message); return }
-    if (!data) { setError('Комната не найдена или нет доступа'); return }
     navigate('/config/flat')
   }
 
