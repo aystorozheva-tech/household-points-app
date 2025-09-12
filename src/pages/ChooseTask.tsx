@@ -24,6 +24,7 @@ import SoapIcon from '../icons/SoapIcon'
 import BucketIcon from '../icons/BucketIcon'
 import PetIcon from '../icons/PetIcon'
 import KidsIcon from '../icons/KidsIcon'
+import UnknownIcon from '../icons/UnknownIcon'
 
 type Chore = { id: string; name_ru: string; base_points_cnt: number; settings_per_room_flg: boolean; icon_id: string | null }
 
@@ -138,6 +139,7 @@ export default function ChooseTask() {
     toilet: ToiletIcon,
     shower: ShowerIcon,
     sink: SinkIcon,
+    unknown: UnknownIcon,
   }
 
   return (
@@ -156,13 +158,13 @@ export default function ChooseTask() {
               {simple.length > 0 && (
                 <div className="space-y-3 mb-6">
                   {simple.map(c => {
-                    const Ico = c.icon_id ? IconMap[c.icon_id] : undefined
+                    const Ico = c.icon_id ? IconMap[c.icon_id] : UnknownIcon
                     return (
                       <RowButton
                         key={c.id}
                         title={c.name_ru}
                         subtitle={`+${c.base_points_cnt} баллов`}
-                        left={Ico ? <Ico className="w-6 h-6 text-[#7900FD]"/> : undefined}
+                        left={<Ico className="w-6 h-6 text-[#7900FD]"/>}
                         onClick={() => addSimple(c)}
                       />
                     )
@@ -172,12 +174,12 @@ export default function ChooseTask() {
               {difficult.length > 0 && (
                 <div className="space-y-3">
                   {difficult.map(c => {
-                    const Ico = c.icon_id ? IconMap[c.icon_id] : undefined
+                    const Ico = c.icon_id ? IconMap[c.icon_id] : UnknownIcon
                     return (
                       <RowButton
                         key={c.id}
                         title={c.name_ru}
-                        left={Ico ? <Ico className="w-6 h-6 text-[#7900FD]"/> : undefined}
+                        left={<Ico className="w-6 h-6 text-[#7900FD]"/>}
                         right={<ChevronRightIcon className="w-5 h-5 text-slate-300" />}
                         onClick={() => navigate(`/choose-rooms/${c.id}`)}
                       />
