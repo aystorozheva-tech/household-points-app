@@ -2,6 +2,7 @@ const { createClient } = require('@supabase/supabase-js')
 const webpush = require('web-push')
 
 const subject = process.env.VAPID_SUBJECT || 'mailto:support@example.com'
+const appName = process.env.PWA_NAME || 'Хлопоты'
 webpush.setVapidDetails(subject, process.env.VAPID_PUBLIC_KEY || '', process.env.VAPID_PRIVATE_KEY || '')
 
 exports.handler = async (event) => {
@@ -49,26 +50,45 @@ exports.handler = async (event) => {
     const profileIds = (recipients || []).map((r) => r.id)
     if (profileIds.length === 0) return { statusCode: 200, body: 'No recipients' }
 
-    function entryMsg(kind, title, points, editedAction) {
-      if (editedAction === 'edited') return `${actorName} отредактировал(-а): ${title}`
-      if (editedAction === 'deleted') return `${actorName} удалил(-а): ${title}`
-      if (kind === 'task') return `${actorName} похлопотал(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
-      if (kind === 'reward') return `${actorName} наградил(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
-      if (kind === 'penalty') return `${actorName} наказан(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
-      return `${actorName}: ${title}`
+    function entryMsg(kind, title, points, editedAction, finedName) {
+      if (editedAction === 'edited') return `${appName} ${actorName} отредактировал(-а): ${title}`
+      if (editedAction === 'deleted') return `${appName} ${actorName} удалил(-а): ${title}`
+      if (kind === 'task') return `${appName} ${actorName} похлопотал(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      if (kind === 'reward') return `${appName} ${actorName} наградил(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      if (kind === 'penalty') return `${appName} ${finedName || actorName} наказан(-а): ${title}, ${points >= 0 ? '+' : ''}${points} баллов`
+      return `${appName} ${actorName}: ${title}`
     }
 
-    function choreMsg(title) { return `${actorName} отредактировал(-а): ${title}` }
-    function penaltyMsg(title) { return `${actorName} отредактировал(-а): ${title}` }
+    function choreMsg(title) { return `${appName} ${actorName} отредактировала(-а): ${title}` }
+    function penaltyMsg(title) { return `${appName} ${actorName} отредактировала(-а): ${title}` }
 
-    let notifTitle = 'Хлопоты'
+    let notifTitle = appName
     let bodyText = ''
     let url = '/#/history'
     switch (type) {
-      case 'entry_created':
-        bodyText = entryMsg(entity.kind, entity.title, entity.points)
+      case 'entry_created': {
+        let finedName = null
+        if (entity.kind === 'penalty' && entity.id) {
+          // Resolve fined player's display name from the entry's profile_id
+          const { data: entry } = await supabase
+            .from('entries')
+            .select('profile_id')
+            .eq('id', entity.id)
+            .maybeSingle()
+          const profileId = entry?.profile_id
+          if (profileId) {
+            const { data: fined } = await supabase
+              .from('profiles')
+              .select('display_name')
+              .eq('id', profileId)
+              .maybeSingle()
+            finedName = fined?.display_name || null
+          }
+        }
+        bodyText = entryMsg(entity.kind, entity.title, entity.points, undefined, finedName)
         url = '/#/history'
         break
+      }
       case 'entry_edited':
         bodyText = entryMsg(entity.kind, entity.title, entity.points, 'edited')
         url = `/#/edit-entry/${entity.id}`
@@ -86,7 +106,7 @@ exports.handler = async (event) => {
         url = `/#/config/punishments/${entity.id}`
         break
       default:
-        bodyText = 'Новое уведомление'
+        bodyText = `${appName}: Новое уведомление`
     }
 
     const { data: subs, error } = await supabase
