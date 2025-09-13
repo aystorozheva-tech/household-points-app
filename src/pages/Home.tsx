@@ -216,15 +216,22 @@ export default function Home() {
     return () => { mounted = false }
   }, [me?.id, householdId])
 
+  const rounded = useMemo(() => ({
+    nastya: Math.round(totals.nastya),
+    max: Math.round(totals.max),
+  }), [totals])
+
   const leaderId = useMemo<'nastya' | 'max' | null>(() => {
-    if (totals.nastya === totals.max) return null
-    return totals.nastya > totals.max ? 'nastya' : 'max'
-  }, [totals])
+    if (rounded.nastya === rounded.max) return null
+    return rounded.nastya > rounded.max ? 'nastya' : 'max'
+  }, [rounded])
 
   // --- Status message (absolute diff, clearer colors) ---
   let statusText = ''
   let statusColor = ''
-  const diff = myPoints - otherPoints
+  const myRounded = rounded.nastya
+  const otherRounded = rounded.max
+  const diff = myRounded - otherRounded
   if (diff < 0) {
     statusText = `Ты проигрываешь на ${Math.abs(diff)}`
     statusColor = 'text-rose-500'
@@ -248,14 +255,14 @@ export default function Home() {
       <div className="grid grid-cols-2 gap-4 mb-2">
         <PlayerCard
           name={myName}
-          points={myPoints}
+          points={myRounded}
           isCurrent={true}
           isLeader={leaderId === 'nastya'}
           avatarUrl={me?.avatar_url ?? undefined}
         />
         <PlayerCard
           name={partnerName}
-          points={otherPoints}
+          points={otherRounded}
           isCurrent={false}
           isLeader={leaderId === 'max'}
           avatarUrl={partner?.avatar_url ?? undefined}

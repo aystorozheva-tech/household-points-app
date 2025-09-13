@@ -89,7 +89,7 @@ export default function EditEntry() {
     setError(null)
     setSaving(true)
     const payload: Partial<Entry> = {
-      points: Number.isFinite(points) ? Math.trunc(points) : 0,
+      points: Number.isFinite(points) ? points : 0,
       profile_id: profileId,
     }
     const { data, error } = await supabase
@@ -192,8 +192,10 @@ export default function EditEntry() {
               <div className="text-sm text-slate-600 mb-1">Баллы</div>
               <input
                 type="number"
-                value={points}
-                onChange={e => setPoints(parseInt(e.target.value) || 0)}
+                step="0.01"
+                inputMode="decimal"
+                value={Number.isFinite(points) ? points : 0}
+                onChange={e => setPoints(parseFloat(e.target.value))}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-[#6C2CF2]/30 shadow-sm bg-white"
               />
             </label>
