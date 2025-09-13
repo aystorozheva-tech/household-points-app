@@ -54,9 +54,14 @@ export default function History() {
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-slate-900 truncate">{e.title}</span>
-                <span className={`font-bold ${e.points >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {e.points > 0 ? '+' : ''}{e.points}
-                </span>
+                {(() => {
+                  const rp = Math.round(e.points)
+                  const signClass = rp >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                  const display = rp > 0 ? `+${rp}` : `${rp || 0}`
+                  return (
+                    <span className={`font-bold ${signClass}`}>{display}</span>
+                  )
+                })()}
               </div>
               <div className="text-xs text-slate-500">{new Date(e.created_at).toLocaleString('ru-RU')}</div>
             </div>

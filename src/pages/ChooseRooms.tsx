@@ -8,6 +8,8 @@ import DishesIcon from '../icons/DishesIcon'
 import FeatherIcon from '../icons/FeatherIcon'
 import TShirtIcon from '../icons/TShirtIcon'
 import ToiletIcon from '../icons/ToiletIcon'
+import VacuumIcon from '../icons/VacuumIcon'
+import WashmachineIcon from '../icons/WashmachineIcon'
 import BedIcon from '../icons/BedIcon'
 import BathIcon from '../icons/BathIcon'
 import KitchenIcon from '../icons/KitchenIcon'
@@ -119,14 +121,14 @@ export default function ChooseRooms() {
                 {(() => {
                   const IconMap: Record<string, ComponentType<{className?:string}>> = {
                     broom: BroomIcon,
-                    vacuum: BroomIcon,
+                    vacuum: VacuumIcon,
                     mop: MopIcon,
                     window: WindowIcon,
                     cutlery: CutleryIcon,
                     dishes: DishesIcon,
                     dust: FeatherIcon,
                     laundry: TShirtIcon,
-                    washmachine: TShirtIcon,
+                    washmachine: WashmachineIcon,
                     hanger: HangerIcon,
                     iron: IronIcon,
                     soap: SoapIcon,
@@ -141,8 +143,8 @@ export default function ChooseRooms() {
                     trash: TrashIcon,
                     unknown: UnknownIcon,
                   }
-                  const Ico = iconId ? IconMap[iconId] : undefined
-                  return Ico ? <Ico className="w-8 h-8 text-[#7900FD]"/> : <span className="text-[#7900FD] text-xl">★</span>
+                  const Ico = iconId ? (IconMap[iconId] || UnknownIcon) : UnknownIcon
+                  return <Ico className="w-8 h-8 text-[#7900FD]"/>
                 })()}
               </div>
             </div>
@@ -190,7 +192,7 @@ export default function ChooseRooms() {
               })}
             </div>
           )}
-          <div className="mt-6 mb-2 text-right text-sm text-slate-600">Итого: <span className="font-semibold text-slate-900">{total}</span> баллов</div>
+          <div className="mt-6 mb-2 text-right text-sm text-slate-600">Итого: <span className="font-semibold text-slate-900">{Math.round(total)}</span> баллов</div>
           <button
             onClick={confirm}
             className={`w-full rounded-2xl bg-gradient-to-r from-[#E700FD] to-[#7900FD] text-white px-4 py-4 font-bold shadow-md hover:shadow-lg active:scale-[0.99] transition`}
